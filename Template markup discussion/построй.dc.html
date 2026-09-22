@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+  <style>
+    body { margin:0; background:#0A0B0F; }
+    a { color:var(--accent-soft); text-decoration:none; }
+    a:hover { color:var(--accent-text); }
+    ::-webkit-scrollbar { display:none; }
+    @keyframes screenFadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes dropdownIn { from { opacity:0; transform:translateY(-6px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
+    @keyframes slideFromLeft { from { opacity:0; transform:translateX(-14px); } to { opacity:1; transform:translateX(0); } }
+    @keyframes slideFromRight { from { opacity:0; transform:translateX(14px); } to { opacity:1; transform:translateX(0); } }
+  </style>
+</helmet>
+
+<div style="min-height:960px;background:#0A0B0F;display:flex;align-items:center;justify-content:center;padding:48px 24px;font-family:'Inter',sans-serif;{{ themeVarsCss }}">
+  <div style="width:390px;background:var(--surface-0);border-radius:52px;padding:12px;border:1px solid var(--border);box-shadow:var(--frame-shadow);">
+    <div style="background:var(--surface-0);border-radius:40px;height:844px;overflow:hidden;position:relative;display:flex;flex-direction:column;">
+
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 24px 4px;font-size:13px;color:var(--text-secondary);flex-shrink:0;">
+        <span>10:24</span>
+        <span><i class="ti ti-wifi" style="font-size:14px"></i></span>
+      </div>
+
+      <div style="flex:1;overflow-y:auto;overflow-x:hidden;padding:6px 20px 12px;display:flex;flex-direction:column;">
+
+        <sc-if value="{{ screenIsHome }}" hint-placeholder-val="{{ true }}">
+          <div data-screen-label="Главная" style="display:flex;flex-direction:column;height:100%;animation:screenFadeIn 0.32s ease;">
+            <div>
+              <sc-for list="{{ bannersView }}" as="banner" hint-placeholder-count="0">
+                <div onClick="{{ banner.onClick }}" style="{{ banner.wrapStyle }}">
+                  <div style="font-size:12px;font-weight:500;color:var(--text-primary);margin-bottom:2px;">{{ banner.title }}</div>
+                  <div style="font-size:11px;color:var(--text-secondary);">{{ banner.text }}</div>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;">
+              <div style="font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:500;color:var(--text-primary);text-align:center;">{{ homeGreeting }}</div>
+
+              <div style="display:flex;background:var(--surface-2);border-radius:28px;padding:5px;width:100%;border:0.5px solid var(--border);gap:2px;">
+                <div style="{{ homeSegTopicStyle }}" onClick="{{ onSetTopic }}">
+                  <i class="ti ti-bolt" style="font-size:15px;color:{{ homeSegTopicColor }};transition:color 0.2s;"></i>
+                  <span style="font-size:10px;font-weight:500;text-align:center;line-height:1.2;color:{{ homeSegTopicColor }};transition:color 0.2s;">Разобрать тему</span>
+                </div>
+                <div style="{{ homeSegExamStyle }}" onClick="{{ onSetExam }}">
+                  <i class="ti ti-target-arrow" style="font-size:15px;color:{{ homeSegExamColor }};transition:color 0.2s;"></i>
+                  <span style="font-size:10px;font-weight:500;text-align:center;line-height:1.2;color:{{ homeSegExamColor }};transition:color 0.2s;">Готовиться к большому</span>
+                </div>
+              </div>
+
+              <sc-if value="{{ isTopicMode }}" hint-placeholder-val="{{ true }}">
+                <div style="width:100%;display:flex;flex-direction:column;gap:8px;animation:slideFromLeft 0.3s ease;">
+                  <sc-if value="{{ isTileChoice }}" hint-placeholder-val="{{ true }}">
+                    <div style="font-size:10px;color:var(--text-faint);text-align:center;margin-bottom:2px;">Принеси материал для разбора</div>
+                    <div style="display:flex;gap:6px;">
+                      <div onClick="{{ onPickText }}" style="flex:1;background:var(--surface-1);border-radius:20px;padding:14px 6px;display:flex;flex-direction:column;align-items:center;gap:6px;border:0.5px solid var(--border);cursor:pointer;" style-hover="border-color:var(--border-strong);">
+                        <i class="ti ti-file-text" style="font-size:17px;color:var(--accent-soft);"></i>
+                        <span style="font-size:10px;color:var(--text-tertiary);font-weight:500;">Текст</span>
+                      </div>
+                      <div onClick="{{ onPickPhoto }}" style="flex:1;background:var(--surface-1);border-radius:20px;padding:14px 6px;display:flex;flex-direction:column;align-items:center;gap:6px;border:0.5px solid var(--border);cursor:pointer;" style-hover="border-color:var(--border-strong);">
+                        <i class="ti ti-camera" style="font-size:17px;color:var(--accent-soft);"></i>
+                        <span style="font-size:10px;color:var(--text-tertiary);font-weight:500;">Фото</span>
+                      </div>
+                      <div onClick="{{ onPickLink }}" style="flex:1;background:var(--surface-1);border-radius:20px;padding:14px 6px;display:flex;flex-direction:column;align-items:center;gap:6px;border:0.5px solid var(--border);cursor:pointer;" style-hover="border-color:var(--border-strong);">
+                        <i class="ti ti-link" style="font-size:17px;color:var(--accent-soft);"></i>
+                        <span style="font-size:10px;color:var(--text-tertiary);font-weight:500;">Ссылка</span>
+                      </div>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{ isMaterialForm }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
+                      <div onClick="{{ onBackToTiles }}" style="width:26px;height:26px;border-radius:50%;background:var(--surface-1);border:0.5px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+                        <i class="ti ti-chevron-left" style="font-size:12px;color:var(--accent-text);"></i>
+                      </div>
+                      <div style="font-size:11px;color:var(--text-secondary);">{{ materialFormLabel }}</div>
+                    </div>
+
+                    <div style="background:var(--surface-1);border:0.5px solid var(--border);border-radius:18px;padding:10px 14px;position:relative;">
+                      <div style="font-size:9px;color:var(--text-muted);margin-bottom:3px;">Предмет</div>
+                      <div onClick="{{ onToggleMatSubject }}" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:4px;">
+                        <span style="font-size:12px;color:{{ matSubjectColor }};">{{ matSubjectLabel }}</span>
+                        <i class="ti ti-chevron-down" style="font-size:11px;color:var(--text-muted);flex-shrink:0;"></i>
+                      </div>
+                      <sc-if value="{{ matSubjectOpen }}" hint-placeholder-val="{{ false }}">
+                        <div onClick="{{ onCloseMatSubject }}" style="position:fixed;inset:0;z-index:4;"></div>
+                        <div style="position:absolute;top:100%;left:0;right:0;margin-top:6px;background:var(--surface-3);border:0.5px solid var(--border-dropdown);border-radius:14px;padding:6px;z-index:5;animation:dropdownIn 0.18s ease;transform-origin:top;box-shadow:var(--dropdown-shadow);">
+                          <sc-for list="{{ subjectOptionsMat }}" as="opt" hint-placeholder-count="4">
+                            <div onClick="{{ opt.onClick }}" style="padding:8px 10px;border-radius:10px;font-size:11px;color:{{ opt.color }};cursor:pointer;transition:color 0.15s,background 0.15s;" style-hover="background:#2E3350;">{{ opt.label }}</div>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                    </div>
+                    <div style="background:var(--surface-1);border:0.5px solid var(--border);border-radius:18px;padding:10px 14px;">
+                      <div style="font-size:9px;color:var(--text-muted);margin-bottom:3px;">Тема</div>
+                      <input value="{{ matTopic }}" onChange="{{ onMatTopic }}" placeholder="Например, законы Ньютона" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;color:var(--text-primary);font-family:'Inter',sans-serif;padding:0;" />
+                    </div>
+
+                    <sc-if value="{{ isTextForm }}" hint-placeholder-val="{{ false }}">
+                      <div style="background:var(--surface-1);border:0.5px solid var(--border);border-radius:18px;padding:10px 14px;">
+                        <div style="font-size:9px;color:var(--text-muted);margin-bottom:3px;">Текст материала</div>
+                        <textarea value="{{ matText }}" onChange="{{ onMatText }}" placeholder="Вставь или напиши текст для разбора..." style="width:100%;border:none;outline:none;background:transparent;font-size:12px;color:var(--text-primary);font-family:'Inter',sans-serif;padding:0;resize:none;height:64px;"></textarea>
+                      </div>
+                    </sc-if>
+
+                    <sc-if value="{{ isPhotoForm }}" hint-placeholder-val="{{ false }}">
+                      <div style="{{ photoSlotStyle }}" onClick="{{ onMatPhotoPick }}">
+                        <sc-if value="{{ matPhotoChosen }}" hint-placeholder-val="{{ false }}">
+                          <i class="ti ti-photo-check" style="font-size:20px;color:var(--accent-soft);"></i>
+                          <span style="font-size:11px;color:var(--text-tertiary);">Фото выбрано</span>
+                        </sc-if>
+                        <sc-if value="{{ matPhotoEmpty }}" hint-placeholder-val="{{ true }}">
+                          <i class="ti ti-camera-plus" style="font-size:20px;color:var(--text-secondary);"></i>
+                          <span style="font-size:11px;color:var(--text-secondary);">Выбрать фото</span>
+                        </sc-if>
+                      </div>
+                    </sc-if>
+
+                    <sc-if value="{{ isLinkForm }}" hint-placeholder-val="{{ false }}">
+                      <div style="background:var(--surface-1);border:0.5px solid var(--border);border-radius:18px;padding:10px 14px;">
+                        <div style="font-size:9px;color:var(--text-muted);margin-bottom:3px;">Ссылка</div>
+                        <input value="{{ matLink }}" onChange="{{ onMatLink }}" placeholder="https://..." style="width:100%;border:none;outline:none;background:transparent;font-size:12px;color:var(--text-primary);font-family:'Inter',sans-serif;padding:0;" />
+                      </div>
+                      <sc-if value="{{ matLinkPreview }}" hint-placeholder-val="{{ false }}">
+                        <div style="background:var(--surface-2);border:0.5px solid var(--border);border-radius:16px;padding:10px 12px;display:flex;align-items:center;gap:10px;">
+                          <div style="width:32px;height:32px;border-radius:9px;background:var(--surface-3);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-world" style="font-size:15px;color:var(--accent-soft);"></i></div>
+                          <div style="overflow:hidden;">
+                            <div style="font-size:11px;color:var(--text-primary);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ matLinkPreview }}</div>
+                            <div style="font-size:9px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ matLink }}</div>
+                          </div>
+                        </div>
+                      </sc-if>
+                    </sc-if>
+
+                    <div style="{{ matSubmitStyle }}" onClick="{{ onMatSubmit }}">Начать разбор</div>
+                  </sc-if>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ isExamMode }}" hint-placeholder-val="{{ false }}">
+                <div style="width:100%;display:flex;flex-direction:column;gap:8px;animation:slideFromRight 0.3s ease;">
+                  <div style="background:var(--surface-1);border:0.5px solid var(--border);border-radius:18px;padding:10px 14px;">
+                    <div style="font-size:9px;color:var(--text-muted);margin-bottom:3px;">Название проекта</div>
+                    <input value="{{ newTitle }}" onChange="{{ onNewTitle }}" placeholder="Например, ОГЭ по физике" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;color:var(--text-primary);font-family:'Inter',sans-serif;padding:0;" />
+                  </div>
+                  <div style="display:flex;gap:6px;">
+                    <div style="flex:1;background:var(--surface-1);border:0.5px solid var(--border);border-radius:18px;padding:10px 14px;position:relative;">
+                      <div style="font-size:9px;color:var(--text-muted);margin-bottom:3px;">Предмет</div>
+                      <div onClick="{{ onToggleNewSubject }}" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:4px;">
+                        <span style="font-size:12px;color:{{ subjectColor }};">{{ newSubjectLabel }}</span>
+                        <i class="ti ti-chevron-down" style="font-size:11px;color:var(--text-muted);flex-shrink:0;"></i>
+                      </div>
+                      <sc-if value="{{ newSubjectOpen }}" hint-placeholder-val="{{ false }}">
+                        <div onClick="{{ onCloseNewSubject }}" style="position:fixed;inset:0;z-index:4;"></div>
+                        <div style="position:absolute;top:100%;left:0;right:0;margin-top:6px;background:var(--surface-3);border:0.5px solid var(--border-dropdown);border-radius:14px;padding:6px;z-index:5;animation:dropdownIn 0.18s ease;transform-origin:top;box-shadow:var(--dropdown-shadow);">
+                          <sc-for list="{{ subjectOptionsNew }}" as="opt" hint-placeholder-count="4">
+                            <div onClick="{{ opt.onClick }}" style="padding:8px 10px;border-radius:10px;font-size:11px;color:{{ opt.color }};cursor:pointer;transition:color 0.15s,background 0.15s;" style-hover="background:#2E3350;">{{ opt.label }}</div>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                    </div>
+                    <div style="flex:1;background:var(--surface-1);border:0.5px solid var(--border);border-radius:18px;padding:10px 14px;">
+                      <div style="font-size:9px;color:var(--text-muted);margin-bottom:3px;">Дедлайн</div>
+                      <input type="date" value="{{ newDeadline }}" onChange="{{ onNewDeadline }}" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;color:var(--text-primary);font-family:'Inter',sans-serif;padding:0;" />
+                    </div>
+                  </div>
+                  <div style="{{ createBtnStyle }}" onClick="{{ onCreateProject }}">Создать проект</div>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ screenIsProjects }}" hint-placeholder-val="{{ false }}">
+          <div data-screen-label="Проекты" style="display:flex;flex-direction:column;height:100%;animation:screenFadeIn 0.32s ease;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+              <div style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:500;color:var(--text-primary);">Проекты</div>
+              <div style="position:relative;">
+                <div onClick="{{ onToggleSort }}" style="width:34px;height:34px;border-radius:50%;background:var(--surface-1);border:0.5px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;">
+                  <i class="ti ti-adjustments-horizontal" style="font-size:15px;color:var(--accent-text);"></i>
+                </div>
+                <sc-if value="{{ sortOpen }}" hint-placeholder-val="{{ false }}">
+                  <div onClick="{{ onCloseSort }}" style="position:fixed;inset:0;z-index:4;"></div>
+                  <div style="position:absolute;top:40px;right:0;background:var(--surface-3);border:0.5px solid var(--border-dropdown);border-radius:16px;padding:6px;width:180px;z-index:5;animation:dropdownIn 0.18s ease;transform-origin:top right;box-shadow:var(--dropdown-shadow);">
+                    <div onClick="{{ onSortDeadline }}" style="padding:8px 10px;border-radius:10px;font-size:11px;color:{{ sortDeadlineColor }};cursor:pointer;transition:color 0.15s;">По дедлайну</div>
+                    <div onClick="{{ onSortMaterials }}" style="padding:8px 10px;border-radius:10px;font-size:11px;color:{{ sortMaterialsColor }};cursor:pointer;transition:color 0.15s;">По количеству материалов</div>
+                    <div onClick="{{ onSortProgress }}" style="padding:8px 10px;border-radius:10px;font-size:11px;color:{{ sortProgressColor }};cursor:pointer;transition:color 0.15s;">По прогрессу</div>
+                  </div>
+                </sc-if>
+              </div>
+            </div>
+
+            <div style="display:flex;background:var(--surface-2);border-radius:24px;padding:4px;border:0.5px solid var(--border);margin-bottom:14px;">
+              <div style="{{ projSegActiveStyle }}" onClick="{{ onSetActiveProjects }}">Активные</div>
+              <div style="{{ projSegHistoryStyle }}" onClick="{{ onSetHistoryProjects }}">История</div>
+            </div>
+
+            <sc-if value="{{ isActiveProjects }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                <sc-for list="{{ projectsView }}" as="p" hint-placeholder-count="3">
+                  <div style="{{ p.cardStyle }}" onClick="{{ p.onClick }}">
+                    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+                      <div style="display:flex;align-items:center;gap:6px;">
+                        <sc-if value="{{ p.pinned }}" hint-placeholder-val="{{ false }}">
+                          <i class="ti ti-pin-filled" style="font-size:12px;color:var(--accent-text);"></i>
+                        </sc-if>
+                        <span style="font-size:14px;font-weight:500;color:var(--text-primary);">{{ p.title }}</span>
+                        <sc-if value="{{ p.paused }}" hint-placeholder-val="{{ false }}">
+                          <span style="font-size:9px;color:var(--text-muted);background:var(--surface-0);padding:2px 8px;border-radius:8px;">на паузе</span>
+                        </sc-if>
+                      </div>
+                      <span style="font-size:11px;color:var(--text-secondary);white-space:nowrap;">{{ p.materials }} материалов</span>
+                    </div>
+                    <div style="display:flex;gap:6px;">
+                      <span style="font-size:10px;padding:3px 9px;border-radius:12px;background:var(--surface-3);color:var(--accent-soft);font-weight:500;">{{ p.subject }}</span>
+                      <sc-if value="{{ p.deadlineLabel }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size:10px;padding:3px 9px;border-radius:12px;background:var(--surface-3);color:var(--accent-soft);font-weight:500;">{{ p.deadlineLabel }}</span>
+                      </sc-if>
+                    </div>
+                    <div style="display:flex;height:6px;border-radius:4px;overflow:hidden;background:var(--surface-0);">
+                      <div style="height:100%;background:var(--success);width:{{ p.progress.locked }}%;"></div>
+                      <div style="height:100%;background:var(--accent);width:{{ p.progress.learning }}%;"></div>
+                      <div style="height:100%;background:var(--border);width:{{ p.progress.ahead }}%;"></div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);">
+                      <div style="display:flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:var(--success);"></span>Закреплено {{ p.progress.locked }}%</div>
+                      <div style="display:flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:var(--accent);"></span>Изучаем {{ p.progress.learning }}%</div>
+                      <div style="display:flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:var(--border);"></span>Впереди {{ p.progress.ahead }}%</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isHistoryProjects }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                <sc-for list="{{ historyView }}" as="h" hint-placeholder-count="3">
+                  <div style="background:var(--surface-1);border:0.5px solid var(--border);border-radius:22px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;">
+                    <div style="display:flex;justify-content:space-between;">
+                      <span style="font-size:13px;font-weight:500;color:var(--text-primary);">{{ h.title }}</span>
+                      <span style="font-size:10px;color:var(--text-muted);">{{ h.date }}</span>
+                    </div>
+                    <div style="font-size:11px;color:var(--text-secondary);">{{ h.preview }}</div>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                      <span onClick="{{ h.onOpen }}" style="font-size:10px;color:var(--accent-text);font-weight:500;cursor:pointer;">Открыть</span>
+                      <span onClick="{{ h.onRedo }}" style="font-size:10px;color:var(--accent-text);font-weight:500;cursor:pointer;">Пройти снова</span>
+                      <span onClick="{{ h.onConvert }}" style="font-size:10px;color:var(--accent-text);font-weight:500;cursor:pointer;">Добавить материалы</span>
+                      <span onClick="{{ h.onDelete }}" style="font-size:10px;color:var(--danger);font-weight:500;cursor:pointer;">Удалить</span>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ screenIsAbout }}" hint-placeholder-val="{{ false }}">
+          <div data-screen-label="О тебе" style="display:flex;flex-direction:column;height:100%;animation:screenFadeIn 0.32s ease;">
+            <div style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:500;color:var(--text-primary);margin-bottom:10px;">О тебе</div>
+
+            <div style="display:flex;background:var(--surface-2);border-radius:20px;padding:4px;border:0.5px solid var(--border);margin-bottom:12px;gap:2px;">
+              <div style="{{ aboutSeg1Style }}" onClick="{{ onSetStats }}"><i class="ti ti-chart-bar" style="font-size:16px;color:{{ aboutSeg1Color }};transition:color 0.2s;"></i></div>
+              <div style="{{ aboutSeg2Style }}" onClick="{{ onSetMethods }}"><i class="ti ti-target-arrow" style="font-size:16px;color:{{ aboutSeg2Color }};transition:color 0.2s;"></i></div>
+              <div style="{{ aboutSeg3Style }}" onClick="{{ onSetObservations }}"><i class="ti ti-eye" style="font-size:16px;color:{{ aboutSeg3Color }};transition:color 0.2s;"></i></div>
+            </div>
+
+            <sc-if value="{{ isStats }}" hint-placeholder-val="{{ true }}">
+              <div>
+                <div style="background:var(--surface-1);border:0.5px solid var(--border);border-radius:18px;padding:12px;margin-bottom:10px;">
+                  <div style="font-size:11px;color:var(--text-tertiary);line-height:1.5;">На этой неделе ты занимался чаще обычного — особенно вечером. Физика идёт стабильнее алгебры.</div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+                  <div style="background:var(--surface-1);border-radius:16px;padding:10px;"><div style="font-size:18px;font-weight:500;color:var(--text-primary);">14ч</div><div style="font-size:9px;color:var(--text-secondary);margin-top:2px;">за неделю</div></div>
+                  <div style="background:var(--surface-1);border-radius:16px;padding:10px;"><div style="font-size:18px;font-weight:500;color:var(--text-primary);">38</div><div style="font-size:9px;color:var(--text-secondary);margin-top:2px;">разборов</div></div>
+                  <div style="background:var(--surface-1);border-radius:16px;padding:10px;"><div style="font-size:18px;font-weight:500;color:var(--text-primary);">3</div><div style="font-size:9px;color:var(--text-secondary);margin-top:2px;">проекта</div></div>
+                  <div style="background:var(--surface-1);border-radius:16px;padding:10px;"><div style="font-size:18px;font-weight:500;color:var(--text-primary);">86%</div><div style="font-size:9px;color:var(--text-secondary);margin-top:2px;">завершено</div></div>
+                </div>
+                <div style="background:var(--surface-1);border:0.5px solid var(--border);border-radius:16px;padding:10px;">
+                  <div style="font-size:9px;color:var(--text-muted);margin-bottom:6px;">Активность за месяц</div>
+                  <div style="display:grid;grid-template-columns:repeat(10,1fr);gap:2px;">
+                    <sc-for list="{{ heatCells }}" as="c" hint-placeholder-count="30">
+                      <div style="aspect-ratio:1;border-radius:2px;background:{{ c.color }};"></div>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isMethods }}" hint-placeholder-val="{{ false }}">
+              <div>
+                <div style="background:var(--surface-1);border:0.5px solid var(--border);border-radius:18px;padding:12px;margin-bottom:8px;">
+                  <div style="font-size:9px;color:var(--text-muted);margin-bottom:8px;">Текущие приоритеты</div>
+                  <sc-for list="{{ methodsView }}" as="m" hint-placeholder-count="3">
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--surface-3);">
+                      <span style="font-size:11px;color:var(--text-primary);">{{ m.name }}</span>
+                      <div style="width:40px;height:4px;border-radius:2px;background:var(--surface-0);overflow:hidden;"><div style="height:100%;background:var(--accent);width:{{ m.pct }}%;"></div></div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div onClick="{{ onOpenRegistry }}" style="background:var(--surface-3);border-radius:16px;padding:10px;text-align:center;font-size:11px;color:var(--accent-text);font-weight:500;cursor:pointer;">
+                  <i class="ti ti-layout-grid" style="margin-right:6px;"></i>Реестр техник
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isObservations }}" hint-placeholder-val="{{ false }}">
+              <div>
+                <sc-for list="{{ observationsView }}" as="o" hint-placeholder-count="3">
+                  <div style="background:var(--surface-1);border:0.5px solid var(--border);border-radius:16px;padding:10px 12px;margin-bottom:8px;">
+                    <div style="font-size:9px;color:var(--text-muted);margin-bottom:4px;">{{ o.date }}</div>
+                    <div style="font-size:11px;color:var(--text-tertiary);line-height:1.5;">{{ o.text }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ screenIsProfile }}" hint-placeholder-val="{{ false }}">
+          <div data-screen-label="Профиль" style="display:flex;flex-direction:column;height:100%;animation:screenFadeIn 0.32s ease;">
+            <div style="font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:500;color:var(--text-primary);margin-bottom:4px;">Профиль</div>
+
+            <div style="font-size:10px;color:var(--text-faint);margin:10px 0 6px;text-transform:uppercase;letter-spacing:0.05em;">Аккаунт</div>
+            <div style="background:var(--surface-1);border:0.5px solid var(--border);border-radius:20px;overflow:hidden;">
+              <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;" style-hover="background:var(--surface-1-hover);">
+                <div style="width:34px;height:34px;border-radius:10px;background:var(--surface-3);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-user-circle" style="font-size:16px;color:var(--accent-text);"></i></div>
+                <div style="flex:1;"><div style="font-size:13px;font-weight:500;color:var(--text-primary);">Аккаунт</div><div style="font-size:10px;color:var(--text-secondary);margin-top:1px;">Email, подписка, привязки</div></div>
+                <i class="ti ti-chevron-right" style="font-size:14px;color:var(--text-faint);"></i>
+              </div>
+            </div>
+
+            <div style="font-size:10px;color:var(--text-faint);margin:10px 0 6px;text-transform:uppercase;letter-spacing:0.05em;">Учёба</div>
+            <div style="background:var(--surface-1);border:0.5px solid var(--border);border-radius:20px;overflow:hidden;">
+              <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:0.5px solid var(--surface-3);" style-hover="background:var(--surface-1-hover);">
+                <div style="width:34px;height:34px;border-radius:10px;background:var(--surface-3);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-clock" style="font-size:16px;color:var(--accent-text);"></i></div>
+                <div style="flex:1;"><div style="font-size:13px;font-weight:500;color:var(--text-primary);">Занятия</div><div style="font-size:10px;color:var(--text-secondary);margin-top:1px;">Время сессий, длина, дни без работы</div></div>
+                <i class="ti ti-chevron-right" style="font-size:14px;color:var(--text-faint);"></i>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;" style-hover="background:var(--surface-1-hover);">
+                <div style="width:34px;height:34px;border-radius:10px;background:var(--surface-3);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-shield-lock" style="font-size:16px;color:var(--accent-text);"></i></div>
+                <div style="flex:1;"><div style="font-size:13px;font-weight:500;color:var(--text-primary);">Фокус-режим</div><div style="font-size:10px;color:var(--text-secondary);margin-top:1px;">Блокировка приложений на сессиях</div></div>
+                <i class="ti ti-chevron-right" style="font-size:14px;color:var(--text-faint);"></i>
+              </div>
+            </div>
+
+            <div style="font-size:10px;color:var(--text-faint);margin:10px 0 6px;text-transform:uppercase;letter-spacing:0.05em;">Данные и вид</div>
+            <div style="background:var(--surface-1);border:0.5px solid var(--border);border-radius:20px;overflow:hidden;">
+              <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:0.5px solid var(--surface-3);" style-hover="background:var(--surface-1-hover);">
+                <div style="width:34px;height:34px;border-radius:10px;background:var(--surface-3);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-lock" style="font-size:16px;color:var(--accent-text);"></i></div>
+                <div style="flex:1;"><div style="font-size:13px;font-weight:500;color:var(--text-primary);">Приватность</div><div style="font-size:10px;color:var(--text-secondary);margin-top:1px;">Экспорт данных, использование ответов</div></div>
+                <i class="ti ti-chevron-right" style="font-size:14px;color:var(--text-faint);"></i>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;">
+                <div style="width:34px;height:34px;border-radius:10px;background:var(--surface-3);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-palette" style="font-size:16px;color:var(--accent-text);"></i></div>
+                <div style="flex:1;"><div style="font-size:13px;font-weight:500;color:var(--text-primary);">Внешний вид</div><div style="font-size:10px;color:var(--text-secondary);margin-top:1px;">{{ themeLabel }}</div></div>
+                <div onClick="{{ onToggleTheme }}" style="{{ themeSwitchTrackStyle }}">
+                  <div style="{{ themeSwitchThumbStyle }}"><i class="{{ themeSwitchIcon }}" style="font-size:11px;color:var(--accent);"></i></div>
+                </div>
+              </div>
+            </div>
+
+            <div style="font-size:10px;color:var(--text-faint);margin:10px 0 6px;text-transform:uppercase;letter-spacing:0.05em;">Помощь</div>
+            <div style="background:var(--surface-1);border:0.5px solid var(--border);border-radius:20px;overflow:hidden;">
+              <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;" style-hover="background:var(--surface-1-hover);">
+                <div style="width:34px;height:34px;border-radius:10px;background:var(--surface-3);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-help-circle" style="font-size:16px;color:var(--accent-text);"></i></div>
+                <div style="flex:1;"><div style="font-size:13px;font-weight:500;color:var(--text-primary);">Помощь</div><div style="font-size:10px;color:var(--text-secondary);margin-top:1px;">FAQ, обратная связь, наука обучения</div></div>
+                <i class="ti ti-chevron-right" style="font-size:14px;color:var(--text-faint);"></i>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ screenIsDetail }}" hint-placeholder-val="{{ false }}">
+          <div data-screen-label="Профиль проекта" style="display:flex;flex-direction:column;height:100%;animation:screenFadeIn 0.32s ease;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+              <div onClick="{{ onBack }}" style="width:30px;height:30px;border-radius:50%;background:var(--surface-1);border:0.5px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;">
+                <i class="ti ti-chevron-left" style="font-size:14px;color:var(--accent-text);"></i>
+              </div>
+              <div style="position:relative;">
+                <div onClick="{{ onToggleMenu }}" style="width:30px;height:30px;border-radius:50%;background:var(--surface-1);border:0.5px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;">
+                  <i class="ti ti-dots" style="font-size:14px;color:var(--accent-text);"></i>
+                </div>
+                <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+                  <div onClick="{{ onCloseMenu }}" style="position:fixed;inset:0;z-index:4;"></div>
+                  <div style="position:absolute;top:36px;right:0;background:var(--surface-3);border:0.5px solid var(--border-dropdown);border-radius:16px;padding:6px;width:170px;z-index:5;animation:dropdownIn 0.18s ease;transform-origin:top right;box-shadow:var(--dropdown-shadow);">
+                    <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;font-size:11px;color:var(--text-tertiary);cursor:pointer;" onClick="{{ onCloseMenu }}"><i class="ti ti-calendar" style="font-size:13px;color:var(--accent-soft);"></i><span>Изменить дедлайн</span></div>
+                    <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;font-size:11px;color:var(--text-tertiary);cursor:pointer;" onClick="{{ onTogglePause }}"><i class="ti ti-player-pause" style="font-size:13px;color:var(--accent-soft);"></i><span>{{ pauseLabel }}</span></div>
+                    <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;font-size:11px;color:var(--text-tertiary);cursor:pointer;" onClick="{{ onTogglePin }}"><i class="ti ti-pin" style="font-size:13px;color:var(--accent-soft);"></i><span>{{ pinLabel }}</span></div>
+                    <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;font-size:11px;color:var(--danger);cursor:pointer;" onClick="{{ onDeleteProject }}"><i class="ti ti-trash" style="font-size:13px;color:var(--danger);"></i><span>Удалить проект</span></div>
+                  </div>
+                </sc-if>
+              </div>
+            </div>
+
+            <div style="font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:500;color:var(--text-primary);margin-bottom:4px;">{{ selected.title }}</div>
+            <div style="font-size:11px;color:var(--text-secondary);margin-bottom:16px;">{{ selected.meta }}</div>
+
+            <div style="display:flex;height:10px;border-radius:6px;overflow:hidden;background:var(--surface-2);margin-bottom:8px;">
+              <div style="height:100%;background:var(--success);width:{{ selected.progress.locked }}%;"></div>
+              <div style="height:100%;background:var(--accent);width:{{ selected.progress.learning }}%;"></div>
+              <div style="height:100%;background:var(--border);width:{{ selected.progress.ahead }}%;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-bottom:18px;">
+              <div style="display:flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:var(--success);"></span>Закреплено {{ selected.progress.locked }}%</div>
+              <div style="display:flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:var(--accent);"></span>Изучаем {{ selected.progress.learning }}%</div>
+              <div style="display:flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:var(--border);"></span>Впереди {{ selected.progress.ahead }}%</div>
+            </div>
+
+            <div style="font-size:10px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">Материалы ({{ selected.materials }})</div>
+            <sc-for list="{{ selected.materialsList }}" as="mat" hint-placeholder-count="2">
+              <div style="display:flex;align-items:center;gap:10px;padding:8px 0;">
+                <div style="width:28px;height:28px;border-radius:8px;background:var(--surface-1);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="{{ mat.icon }}" style="font-size:13px;color:var(--accent-soft);"></i></div>
+                <div style="font-size:12px;color:var(--text-primary);flex:1;">{{ mat.name }}</div>
+              </div>
+            </sc-for>
+            <div style="display:flex;align-items:center;gap:8px;padding:10px 0;font-size:12px;color:var(--text-secondary);cursor:pointer;"><i class="ti ti-plus" style="font-size:14px;"></i>Добавить материал</div>
+
+            <div style="background:var(--surface-1);border:0.5px solid var(--border);border-radius:16px;padding:12px;margin:12px 0;">
+              <div style="font-size:10px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">До дедлайна</div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;padding:4px 0;"><span style="color:var(--text-tertiary);">Осталось сессий</span><span style="color:var(--text-muted);">{{ selected.sessionsLeft }}</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;padding:4px 0;"><span style="color:var(--text-tertiary);">Следующая</span><span style="color:var(--text-muted);">{{ selected.nextSession }}</span></div>
+            </div>
+
+            <div style="flex:1;"></div>
+            <div onClick="{{ onContinueLearning }}" style="background:var(--accent);border-radius:22px;padding:14px;text-align:center;font-size:14px;font-weight:500;color:var(--on-accent);cursor:pointer;">Продолжить обучение</div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ screenIsRegistry }}" hint-placeholder-val="{{ false }}">
+          <div data-screen-label="Реестр техник" style="display:flex;flex-direction:column;height:100%;animation:screenFadeIn 0.32s ease;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+              <div onClick="{{ onBack }}" style="width:30px;height:30px;border-radius:50%;background:var(--surface-1);border:0.5px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;">
+                <i class="ti ti-chevron-left" style="font-size:14px;color:var(--accent-text);"></i>
+              </div>
+              <div style="font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:500;color:var(--text-primary);">Реестр техник</div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <sc-for list="{{ registryDemo }}" as="r" hint-placeholder-count="4">
+                <div onClick="{{ r.onTry }}" style="background:var(--surface-1);border:0.5px solid var(--border-strong);border-radius:20px;padding:12px;display:flex;flex-direction:column;gap:8px;cursor:pointer;">
+                  <div style="width:32px;height:32px;border-radius:10px;background:var(--surface-3);display:flex;align-items:center;justify-content:center;"><i class="{{ r.icon }}" style="font-size:15px;color:var(--accent-soft);"></i></div>
+                  <div style="font-size:12px;font-weight:500;color:var(--text-primary);line-height:1.3;">{{ r.name }}</div>
+                  <div style="font-size:10px;color:var(--text-secondary);line-height:1.4;">{{ r.desc }}</div>
+                  <span style="font-size:8px;padding:2px 6px;border-radius:8px;background:var(--surface-0);color:var(--text-muted);align-self:flex-start;">{{ r.tag }}</span>
+                  <div style="font-size:10px;color:var(--accent-text);font-weight:500;margin-top:2px;">Попробовать →</div>
+                </div>
+              </sc-for>
+              <sc-for list="{{ registryPlaceholder }}" as="r" hint-placeholder-count="4">
+                <div style="background:var(--surface-1);border:0.5px solid var(--border);border-radius:20px;padding:12px;display:flex;flex-direction:column;gap:8px;opacity:0.55;">
+                  <div style="width:32px;height:32px;border-radius:10px;background:var(--surface-3);display:flex;align-items:center;justify-content:center;"><i class="{{ r.icon }}" style="font-size:15px;color:var(--accent-soft);"></i></div>
+                  <div style="font-size:12px;font-weight:500;color:var(--text-primary);line-height:1.3;">{{ r.name }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ screenIsSession }}" hint-placeholder-val="{{ false }}">
+          <div data-screen-label="Рабочая зона сессии" style="display:flex;flex-direction:column;height:100%;animation:screenFadeIn 0.32s ease;">
+            <div style="display:flex;justify-content:flex-end;margin-bottom:20px;">
+              <i onClick="{{ onCloseSession }}" class="ti ti-x" style="font-size:16px;color:var(--text-faint);cursor:pointer;"></i>
+            </div>
+            <div style="height:3px;background:var(--surface-1);border-radius:2px;margin-bottom:40px;overflow:hidden;">
+              <div style="height:100%;width:{{ sessionProgress }}%;background:var(--accent);transition:width 0.3s;"></div>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:20px;">
+              <div style="font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:500;color:var(--text-primary);text-align:center;line-height:1.4;">Сформулируй третий закон Ньютона своими словами, без подглядывания в конспект</div>
+              <textarea placeholder="Напиши ответ здесь..." style="background:var(--surface-1);border:0.5px solid var(--border);border-radius:20px;padding:16px;font-size:13px;color:var(--text-primary);margin-top:12px;font-family:'Inter',sans-serif;resize:none;height:100px;outline:none;"></textarea>
+            </div>
+            <div onClick="{{ onAdvanceSession }}" style="background:var(--accent);border-radius:22px;padding:15px;text-align:center;font-size:14px;font-weight:500;color:var(--on-accent);margin-top:auto;cursor:pointer;">Дальше</div>
+          </div>
+        </sc-if>
+
+      </div>
+
+      <sc-if value="{{ showNav }}" hint-placeholder-val="{{ true }}">
+        <div style="flex-shrink:0;margin:0 20px 20px;display:flex;background:var(--nav-bg);border-radius:32px;padding:6px;border:0.5px solid var(--nav-border);gap:4px;backdrop-filter:blur(20px);">
+          <div style="{{ navHomeStyle }}" onClick="{{ onTabHome }}">
+            <i class="ti ti-home" style="font-size:19px;color:{{ navHomeIconColor }};transition:color 0.2s;"></i>
+            <sc-if value="{{ navHomeActive }}" hint-placeholder-val="{{ true }}"><span style="font-size:12px;font-weight:500;color:var(--on-accent);margin-left:2px;">Главная</span></sc-if>
+          </div>
+          <div style="{{ navProjectsStyle }}" onClick="{{ onTabProjects }}">
+            <i class="ti ti-folder" style="font-size:19px;color:{{ navProjectsIconColor }};transition:color 0.2s;"></i>
+            <sc-if value="{{ navProjectsActive }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:500;color:var(--on-accent);margin-left:2px;">Проекты</span></sc-if>
+          </div>
+          <div style="{{ navAboutStyle }}" onClick="{{ onTabAbout }}">
+            <i class="ti ti-chart-bar" style="font-size:19px;color:{{ navAboutIconColor }};transition:color 0.2s;"></i>
+            <sc-if value="{{ navAboutActive }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:500;color:var(--on-accent);margin-left:2px;">О тебе</span></sc-if>
+          </div>
+          <div style="{{ navProfileStyle }}" onClick="{{ onTabProfile }}">
+            <i class="ti ti-user" style="font-size:19px;color:{{ navProfileIconColor }};transition:color 0.2s;"></i>
+            <sc-if value="{{ navProfileActive }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:500;color:var(--on-accent);margin-left:2px;">Профиль</span></sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+
+class Component extends DCLogic {
+  state = {
+    tab: 'home',
+    overlay: null,
+    theme: 'dark',
+    homeMode: 'topic',
+    materialKind: null,
+    matSubject: '',
+    matTopic: '',
+    matText: '',
+    matPhotoChosen: false,
+    matLink: '',
+    matSubjectOpen: false,
+    newSubjectOpen: false,
+    projectsTab: 'active',
+    aboutTab: 'stats',
+    sortOpen: false,
+    sortBy: 'deadline',
+    menuOpen: false,
+    selectedId: 'ege-physics',
+    banners: [
+      { id: 'b1', projectId: 'ege-physics', title: 'ОГЭ по физике', text: '2 темы почти закреплены — стоит продолжить' },
+      { id: 'b2', projectId: 'trig', title: 'Тригонометрия', text: 'Не занимались 3 дня' }
+    ],
+    projects: [
+      { id: 'ege-physics', title: 'ОГЭ по физике', subject: 'Физика', deadlineDays: 14, materials: 12, pinned: true, paused: false,
+        progress: { locked: 15, learning: 35, ahead: 50 },
+        meta: 'Механика и законы движения · до 14 августа',
+        materialsList: [{ icon: 'ti ti-file-text', name: 'Конспект: законы Ньютона' }, { icon: 'ti ti-photo', name: 'Фото учебника, глава 4' }],
+        sessionsLeft: 6, nextSession: 'завтра, 18:00' },
+      { id: 'trig', title: 'Тригонометрия', subject: 'Алгебра', deadlineDays: null, materials: 6, pinned: false, paused: false,
+        progress: { locked: 34, learning: 20, ahead: 46 },
+        meta: 'Формулы приведения · без дедлайна',
+        materialsList: [{ icon: 'ti ti-file-text', name: 'Шпаргалка формул' }],
+        sessionsLeft: 4, nextSession: 'сегодня, 20:00' },
+      { id: 'history-xx', title: 'История: XX век', subject: 'История', deadlineDays: null, materials: 3, pinned: false, paused: false,
+        progress: { locked: 5, learning: 15, ahead: 80 },
+        meta: 'Мировые войны · без дедлайна',
+        materialsList: [{ icon: 'ti ti-file-text', name: 'Хронология событий' }],
+        sessionsLeft: 8, nextSession: 'пятница, 17:30' }
+    ],
+    history: [
+      { id: 'h1', title: 'Квадратные уравнения', date: 'Сегодня, 09:12', preview: '2 материала · фото конспекта' },
+      { id: 'h2', title: 'Клеточное дыхание', date: 'Вчера, 21:40', preview: '1 материал · текст' },
+      { id: 'h3', title: 'Причастный оборот', date: '3 дня назад', preview: '1 материал · ссылка' }
+    ],
+    newTitle: '',
+    newSubject: '',
+    newDeadline: '',
+    sessionProgress: 45
+  };
+
+  componentDidMount() {
+    this._bannerTimer = setInterval(() => {
+      this.setState(s => s.banners.length ? { banners: s.banners.slice(1) } : s);
+    }, 6500);
+  }
+  componentWillUnmount() { clearInterval(this._bannerTimer); }
+
+  openTab = (tab) => this.setState({ tab, overlay: null, sortOpen: false, menuOpen: false });
+  openDetail = (id) => this.setState({ overlay: 'detail', selectedId: id, menuOpen: false });
+  closeOverlay = () => this.setState({ overlay: null, menuOpen: false, sortOpen: false });
+  openRegistry = () => this.setState({ overlay: 'registry' });
+  openSession = () => this.setState({ overlay: 'session', sessionProgress: 45 });
+  gotoBanner = (projectId) => this.setState(s => ({ tab: 'projects', overlay: 'detail', selectedId: projectId, banners: s.banners.filter(b => b.projectId !== projectId) }));
+  toggleSort = () => this.setState(s => ({ sortOpen: !s.sortOpen }));
+  setSortBy = (v) => this.setState({ sortBy: v, sortOpen: false });
+  toggleMenu = () => this.setState(s => ({ menuOpen: !s.menuOpen }));
+  togglePin = () => this.setState(s => ({ projects: s.projects.map(p => p.id === s.selectedId ? { ...p, pinned: !p.pinned } : p), menuOpen: false }));
+  togglePause = () => this.setState(s => ({ projects: s.projects.map(p => p.id === s.selectedId ? { ...p, paused: !p.paused } : p), menuOpen: false }));
+  deleteProject = () => this.setState(s => ({ projects: s.projects.filter(p => p.id !== s.selectedId), overlay: null, menuOpen: false }));
+  deleteHistory = (id) => this.setState(s => ({ history: s.history.filter(h => h.id !== id) }));
+  convertHistory = (id) => this.setState(s => {
+    const item = s.history.find(h => h.id === id);
+    if (!item) return null;
+    const proj = { id: 'p' + Date.now(), title: item.title, subject: 'Общее', deadlineDays: null, materials: 1, pinned: false, paused: false,
+      progress: { locked: 0, learning: 10, ahead: 90 }, meta: item.preview, materialsList: [{ icon: 'ti ti-file-text', name: item.preview }], sessionsLeft: 5, nextSession: '—' };
+    return { history: s.history.filter(h => h.id !== id), projects: [proj, ...s.projects], overlay: 'detail', selectedId: proj.id, tab: 'projects', projectsTab: 'active' };
+  });
+  toggleTheme = () => this.setState(s => ({ theme: s.theme === 'dark' ? 'light' : 'dark' }));
+  setHomeMode = (m) => this.setState({ homeMode: m });
+  pickMaterial = (kind) => this.setState({ materialKind: kind, matSubject: '', matTopic: '', matText: '', matPhotoChosen: false, matLink: '' });
+  backToTiles = () => this.setState({ materialKind: null });
+  setMatSubject = (e) => this.setState({ matSubject: e.target.value });
+  setMatTopic = (e) => this.setState({ matTopic: e.target.value });
+  setMatText = (e) => this.setState({ matText: e.target.value });
+  setMatLink = (e) => this.setState({ matLink: e.target.value });
+  pickMatPhoto = () => this.setState(s => ({ matPhotoChosen: !s.matPhotoChosen }));
+  toggleMatSubject = () => this.setState(s => ({ matSubjectOpen: !s.matSubjectOpen }));
+  closeMatSubject = () => this.setState({ matSubjectOpen: false });
+  selectMatSubject = (v) => this.setState({ matSubject: v, matSubjectOpen: false });
+  toggleNewSubject = () => this.setState(s => ({ newSubjectOpen: !s.newSubjectOpen }));
+  closeNewSubject = () => this.setState({ newSubjectOpen: false });
+  selectNewSubject = (v) => this.setState({ newSubject: v, newSubjectOpen: false });
+  submitMaterial = () => {
+    if (!this.state.matSubject || !this.state.matTopic.trim()) return;
+    this.setState({ materialKind: null });
+    this.openSession();
+  };
+  setProjectsTab = (t) => this.setState({ projectsTab: t, sortOpen: false });
+  setAboutTab = (t) => this.setState({ aboutTab: t });
+  setNewTitle = (e) => this.setState({ newTitle: e.target.value });
+  setNewSubject = (e) => this.setState({ newSubject: e.target.value });
+  setNewDeadline = (e) => this.setState({ newDeadline: e.target.value });
+  createProject = () => {
+    if (!this.state.newTitle.trim()) return;
+    const proj = { id: 'p' + Date.now(), title: this.state.newTitle.trim(), subject: this.state.newSubject || 'Общее',
+      deadlineDays: null, materials: 0, pinned: false, paused: false, progress: { locked: 0, learning: 5, ahead: 95 },
+      meta: (this.state.newSubject || 'Общее') + (this.state.newDeadline ? ' · до ' + this.state.newDeadline : ' · без дедлайна'),
+      materialsList: [], sessionsLeft: 0, nextSession: '—' };
+    this.setState(s => ({ projects: [proj, ...s.projects], tab: 'projects', projectsTab: 'active', newTitle: '', newSubject: '', newDeadline: '' }));
+  };
+  advanceSession = () => {
+    const np = this.state.sessionProgress + 15;
+    if (np >= 100) this.setState({ overlay: null, sessionProgress: 45 });
+    else this.setState({ sessionProgress: np });
+  };
+
+  renderVals() {
+    const s = this.state;
+    const isLight = s.theme === 'light';
+    const palette = isLight ? {
+      'surface-0': '#DCDFE6', 'surface-1': '#F1F2F6', 'surface-2': '#E6E8EF', 'surface-3': '#F1F2F6', 'surface-4': '#D9DBF2', 'surface-1-hover': '#E9EAF0',
+      'border': '#CDD0DA', 'border-strong': '#6366F1', 'border-dropdown': '#CDD0DA',
+      'text-primary': '#1B1D27', 'text-secondary': '#5C6070', 'text-tertiary': '#3D4152', 'text-muted': '#868B9B', 'text-faint': '#9CA0AE',
+      'accent': '#6366F1', 'accent-soft': '#5457E0', 'accent-text': '#4547D6', 'on-accent': '#FFFFFF',
+      'success': '#22A85C', 'danger': '#D6473F',
+      'nav-bg': 'rgba(255,255,255,0.75)', 'nav-border': 'rgba(99,102,241,0.18)',
+      'frame-shadow': '0 40px 100px rgba(0,0,0,0.12)', 'dropdown-shadow': '0 8px 24px rgba(20,22,40,0.12)'
+    } : {
+      'surface-0': '#14161C', 'surface-1': '#1E212E', 'surface-2': '#1A1D28', 'surface-3': '#262A3D', 'surface-4': '#262C4A', 'surface-1-hover': '#232637',
+      'border': '#2A2D3A', 'border-strong': '#4A50A8', 'border-dropdown': '#363A52',
+      'text-primary': '#E2E4EC', 'text-secondary': '#7B8296', 'text-tertiary': '#C5C8D6', 'text-muted': '#5A6480', 'text-faint': '#4D5266',
+      'accent': '#6366F1', 'accent-soft': '#8B8FFA', 'accent-text': '#A5A9FF', 'on-accent': '#F5F6FF',
+      'success': '#4ADE80', 'danger': '#E88888',
+      'nav-bg': 'rgba(38,42,61,0.55)', 'nav-border': 'rgba(139,143,250,0.18)',
+      'frame-shadow': '0 40px 100px rgba(0,0,0,0.55)', 'dropdown-shadow': 'none'
+    };
+    const themeVarsCss = Object.entries(palette).map(([k, v]) => `--${k}:${v};`).join('');
+    const sortedProjects = [...s.projects].sort((a, b) => {
+      if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+      if (s.sortBy === 'deadline') return (a.deadlineDays ?? 999) - (b.deadlineDays ?? 999);
+      if (s.sortBy === 'materials') return b.materials - a.materials;
+      if (s.sortBy === 'progress') return (b.progress.locked + b.progress.learning) - (a.progress.locked + a.progress.learning);
+      return 0;
+    });
+    const projectsView = sortedProjects.map(p => ({
+      ...p,
+      cardStyle: { background: 'var(--surface-1)', border: '0.5px solid ' + (p.pinned ? 'var(--border-strong)' : 'var(--border)'), borderRadius: 22, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10, opacity: p.paused ? 0.6 : 1, cursor: 'pointer', transition: 'border-color 0.25s ease, opacity 0.25s ease' },
+      deadlineLabel: p.deadlineDays != null ? `Дедлайн: ${p.deadlineDays} дней` : null,
+      onClick: () => this.openDetail(p.id)
+    }));
+    const selected = s.projects.find(p => p.id === s.selectedId) || s.projects[0] || { title: '', meta: '', progress: { locked: 0, learning: 0, ahead: 0 }, materials: 0, materialsList: [], sessionsLeft: 0, nextSession: '—' };
+    const bannersView = s.banners.map((b, i) => ({
+      ...b,
+      wrapStyle: { background: 'var(--surface-1)', border: '0.5px solid var(--border)', borderRadius: 20, padding: '12px 14px', marginBottom: 6, cursor: 'pointer', transform: `scale(${i === 0 ? 1 : 0.97}) translateY(${i === 0 ? 0 : -6}px)`, opacity: i === 0 ? 1 : 0.55, position: 'relative', zIndex: 10 - i },
+      onClick: () => this.gotoBanner(b.projectId)
+    }));
+    const historyView = s.history.map(h => ({
+      ...h,
+      onOpen: () => this.openSession(),
+      onRedo: () => this.openSession(),
+      onConvert: () => this.convertHistory(h.id),
+      onDelete: () => this.deleteHistory(h.id)
+    }));
+    const heatPattern = [0,1,2,0,1,3,2,1,0,1,2,3,2,1,0,1,2,3,2,1,0,1,2,1,0,1,2,3,3,2];
+    const heatColors = ['var(--surface-1)', '#3A3D6644', '#3A3D6688', 'var(--accent)'];
+    const heatCells = heatPattern.map(v => ({ color: heatColors[v] }));
+    const methodsView = [
+      { name: 'Активное припоминание', pct: 85 },
+      { name: 'Метод Фейнмана', pct: 60 },
+      { name: 'Интерливинг', pct: 35 }
+    ];
+    const observationsView = [
+      { date: '2 дня назад', text: 'Заметил, что сессии по алгебре в 22:00 короче и с большим числом ошибок. Перенёс их на утро — точность выросла.' },
+      { date: '5 дней назад', text: 'Метод Фейнмана заходит тебе лучше пересказа своими словами — стал использовать его чаще для физики.' },
+      { date: 'Неделю назад', text: 'Короткие сессии по 15 минут работают стабильнее длинных при высокой загрузке — учёл это в расписании.' }
+    ];
+    const subjectOptionsList = ['Физика', 'Алгебра', 'История', 'Другое'];
+    const subjectOptionsMat = subjectOptionsList.map(v => ({ label: v, color: s.matSubject === v ? 'var(--accent-text)' : 'var(--text-tertiary)', onClick: () => this.selectMatSubject(v) }));
+    const subjectOptionsNew = subjectOptionsList.map(v => ({ label: v, color: s.newSubject === v ? 'var(--accent-text)' : 'var(--text-tertiary)', onClick: () => this.selectNewSubject(v) }));
+    const registryDemo = [
+      { icon: 'ti ti-repeat', name: 'Активное припоминание', desc: 'Вспоминаешь ответ сам, до того как посмотреть в материал', tag: 'Любой предмет' },
+      { icon: 'ti ti-message-circle', name: 'Метод Фейнмана', desc: 'Объясняешь тему простыми словами, как для новичка', tag: 'Теория' },
+      { icon: 'ti ti-shuffle', name: 'Интерливинг', desc: 'Чередуешь разные темы в одной сессии вместо одной подряд', tag: 'Проекты' },
+      { icon: 'ti ti-calendar-time', name: 'Интервальное повторение', desc: 'Возвращаешься к теме через нарастающие промежутки времени', tag: 'Долгие сессии' }
+    ].map(r => ({ ...r, onTry: () => this.openSession() }));
+    const registryPlaceholder = [
+      { icon: 'ti ti-puzzle', name: 'Разработочный опрос' },
+      { icon: 'ti ti-notes', name: 'Разбор готовых решений' },
+      { icon: 'ti ti-bulb', name: 'Аналогии и примеры' },
+      { icon: 'ti ti-focus-2', name: 'Целенаправленная практика' }
+    ];
+
+    const segActive = { background: 'var(--surface-4)', border: '0.5px solid var(--border-strong)' };
+    const segInactive = { background: 'transparent', border: '0.5px solid transparent' };
+    const segTransition = { transition: 'background 0.25s ease, border-color 0.25s ease' };
+    const navStyle = (active) => ({ flex: active ? 1.6 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 8px', borderRadius: 24, background: active ? 'var(--accent)' : 'transparent', cursor: 'pointer', transition: 'flex 0.25s ease, background 0.25s ease' });
+
+    const navHomeActive = s.tab === 'home' && !s.overlay;
+    const navProjectsActive = (s.tab === 'projects' && !s.overlay) || s.overlay === 'detail';
+    const navAboutActive = (s.tab === 'about' && !s.overlay) || s.overlay === 'registry';
+    const navProfileActive = s.tab === 'profile' && !s.overlay;
+
+    return {
+      screenIsHome: s.tab === 'home' && !s.overlay,
+      screenIsProjects: s.tab === 'projects' && !s.overlay,
+      screenIsAbout: s.tab === 'about' && !s.overlay,
+      screenIsProfile: s.tab === 'profile' && !s.overlay,
+      screenIsDetail: s.overlay === 'detail',
+      screenIsRegistry: s.overlay === 'registry',
+      screenIsSession: s.overlay === 'session',
+      showNav: s.overlay !== 'session',
+
+      homeGreeting: s.homeMode === 'topic' ? 'Что разбираем?' : 'К чему готовимся?',
+      isTopicMode: s.homeMode === 'topic',
+      isExamMode: s.homeMode === 'exam',
+      homeSegTopicStyle: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '11px 6px', borderRadius: 22, cursor: 'pointer', ...segTransition, ...(s.homeMode === 'topic' ? segActive : segInactive) },
+      homeSegExamStyle: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '11px 6px', borderRadius: 22, cursor: 'pointer', ...segTransition, ...(s.homeMode === 'exam' ? segActive : segInactive) },
+      homeSegTopicColor: s.homeMode === 'topic' ? 'var(--accent-text)' : 'var(--text-secondary)',
+      homeSegExamColor: s.homeMode === 'exam' ? 'var(--accent-text)' : 'var(--text-secondary)',
+      onSetTopic: () => this.setHomeMode('topic'),
+      onSetExam: () => this.setHomeMode('exam'),
+
+      isTileChoice: !s.materialKind,
+      isMaterialForm: !!s.materialKind,
+      isTextForm: s.materialKind === 'text',
+      isPhotoForm: s.materialKind === 'photo',
+      isLinkForm: s.materialKind === 'link',
+      materialFormLabel: s.materialKind === 'text' ? 'Материал: текст' : s.materialKind === 'photo' ? 'Материал: фото' : 'Материал: ссылка',
+      onPickText: () => this.pickMaterial('text'),
+      onPickPhoto: () => this.pickMaterial('photo'),
+      onPickLink: () => this.pickMaterial('link'),
+      onBackToTiles: this.backToTiles,
+      matSubject: s.matSubject, matTopic: s.matTopic, matText: s.matText, matLink: s.matLink,
+      matSubjectColor: s.matSubject ? 'var(--text-primary)' : 'var(--text-muted)',
+      matSubjectLabel: s.matSubject || 'Выбрать',
+      matSubjectOpen: s.matSubjectOpen,
+      onToggleMatSubject: this.toggleMatSubject,
+      onCloseMatSubject: this.closeMatSubject,
+      subjectOptionsMat,
+      onMatSubject: this.setMatSubject, onMatTopic: this.setMatTopic, onMatText: this.setMatText, onMatLink: this.setMatLink,
+      matPhotoChosen: s.matPhotoChosen, matPhotoEmpty: !s.matPhotoChosen,
+      onMatPhotoPick: this.pickMatPhoto,
+      photoSlotStyle: { border: '1.5px dashed ' + (s.matPhotoChosen ? 'var(--accent)' : 'var(--border)'), borderRadius: 18, padding: '20px 10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: 'pointer', background: s.matPhotoChosen ? '#1A1D2E' : 'transparent', transition: 'border-color 0.2s ease, background 0.2s ease' },
+      matLinkPreview: s.matLink.trim() ? (s.matLink.replace(/^https?:\/\//, '').split('/')[0] || 'Ссылка') : '',
+      onMatSubmit: this.submitMaterial,
+      matSubmitStyle: { background: 'var(--accent)', borderRadius: 20, padding: 12, textAlign: 'center', fontSize: 12, fontWeight: 500, color: 'var(--on-accent)', marginTop: 2, cursor: 'pointer', opacity: (s.matSubject && s.matTopic.trim()) ? 1 : 0.5, transition: 'opacity 0.2s ease' },
+
+      newTitle: s.newTitle, newSubject: s.newSubject, newDeadline: s.newDeadline,
+      subjectColor: s.newSubject ? 'var(--text-primary)' : 'var(--text-muted)',
+      newSubjectLabel: s.newSubject || 'Выбрать',
+      newSubjectOpen: s.newSubjectOpen,
+      onToggleNewSubject: this.toggleNewSubject,
+      onCloseNewSubject: this.closeNewSubject,
+      subjectOptionsNew,
+      onNewTitle: this.setNewTitle, onNewSubject: this.setNewSubject, onNewDeadline: this.setNewDeadline,
+      onCreateProject: this.createProject,
+      createBtnStyle: { background: 'var(--accent)', borderRadius: 20, padding: 12, textAlign: 'center', fontSize: 12, fontWeight: 500, color: 'var(--on-accent)', marginTop: 2, cursor: 'pointer', opacity: s.newTitle.trim() ? 1 : 0.5, transition: 'opacity 0.2s ease' },
+
+      bannersView,
+
+      isActiveProjects: s.projectsTab === 'active',
+      isHistoryProjects: s.projectsTab === 'history',
+      projSegActiveStyle: { flex: 1, textAlign: 'center', padding: '8px 10px', borderRadius: 18, fontSize: 12, fontWeight: 500, cursor: 'pointer', transition: 'background 0.25s ease, color 0.25s ease', ...(s.projectsTab === 'active' ? { background: 'var(--surface-4)', color: 'var(--accent-text)' } : { color: 'var(--text-secondary)' }) },
+      projSegHistoryStyle: { flex: 1, textAlign: 'center', padding: '8px 10px', borderRadius: 18, fontSize: 12, fontWeight: 500, cursor: 'pointer', transition: 'background 0.25s ease, color 0.25s ease', ...(s.projectsTab === 'history' ? { background: 'var(--surface-4)', color: 'var(--accent-text)' } : { color: 'var(--text-secondary)' }) },
+      onSetActiveProjects: () => this.setProjectsTab('active'),
+      onSetHistoryProjects: () => this.setProjectsTab('history'),
+      projectsView,
+      historyView,
+      sortOpen: s.sortOpen,
+      onToggleSort: this.toggleSort,
+      onCloseSort: () => this.setState({ sortOpen: false }),
+      sortDeadlineColor: s.sortBy === 'deadline' ? 'var(--accent-text)' : 'var(--text-tertiary)',
+      sortMaterialsColor: s.sortBy === 'materials' ? 'var(--accent-text)' : 'var(--text-tertiary)',
+      sortProgressColor: s.sortBy === 'progress' ? 'var(--accent-text)' : 'var(--text-tertiary)',
+      onSortDeadline: () => this.setSortBy('deadline'),
+      onSortMaterials: () => this.setSortBy('materials'),
+      onSortProgress: () => this.setSortBy('progress'),
+
+      isStats: s.aboutTab === 'stats', isMethods: s.aboutTab === 'methods', isObservations: s.aboutTab === 'observations',
+      aboutSeg1Style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '9px 4px', borderRadius: 16, cursor: 'pointer', transition: 'background 0.25s ease', background: s.aboutTab === 'stats' ? 'var(--surface-4)' : 'transparent' },
+      aboutSeg2Style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '9px 4px', borderRadius: 16, cursor: 'pointer', transition: 'background 0.25s ease', background: s.aboutTab === 'methods' ? 'var(--surface-4)' : 'transparent' },
+      aboutSeg3Style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '9px 4px', borderRadius: 16, cursor: 'pointer', transition: 'background 0.25s ease', background: s.aboutTab === 'observations' ? 'var(--surface-4)' : 'transparent' },
+      aboutSeg1Color: s.aboutTab === 'stats' ? 'var(--accent-text)' : 'var(--text-secondary)',
+      aboutSeg2Color: s.aboutTab === 'methods' ? 'var(--accent-text)' : 'var(--text-secondary)',
+      aboutSeg3Color: s.aboutTab === 'observations' ? 'var(--accent-text)' : 'var(--text-secondary)',
+      onSetStats: () => this.setAboutTab('stats'),
+      onSetMethods: () => this.setAboutTab('methods'),
+      onSetObservations: () => this.setAboutTab('observations'),
+      heatCells,
+      methodsView,
+      observationsView,
+      onOpenRegistry: this.openRegistry,
+      themeVarsCss,
+      themeLabel: isLight ? 'Светлая тема' : 'Тёмная тема',
+      onToggleTheme: this.toggleTheme,
+      themeSwitchTrackStyle: { width: 44, height: 26, borderRadius: 13, background: isLight ? 'var(--accent)' : 'var(--surface-3)', border: '0.5px solid var(--border)', display: 'flex', alignItems: 'center', padding: 2, cursor: 'pointer', transition: 'background 0.25s ease', flexShrink: 0 },
+      themeSwitchThumbStyle: { width: 20, height: 20, borderRadius: '50%', background: 'var(--on-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: isLight ? 'translateX(18px)' : 'translateX(0)', transition: 'transform 0.25s ease' },
+      themeSwitchIcon: isLight ? 'ti ti-sun' : 'ti ti-moon',
+
+      selected,
+      menuOpen: s.menuOpen,
+      onToggleMenu: this.toggleMenu,
+      onCloseMenu: () => this.setState({ menuOpen: false }),
+      onTogglePin: this.togglePin,
+      onTogglePause: this.togglePause,
+      onDeleteProject: this.deleteProject,
+      onBack: this.closeOverlay,
+      onContinueLearning: this.openSession,
+      pinLabel: selected.pinned ? 'Снять приоритет' : 'Поставить приоритет',
+      pauseLabel: selected.paused ? 'Возобновить' : 'Приостановить',
+
+      registryDemo, registryPlaceholder,
+
+      sessionProgress: s.sessionProgress,
+      onCloseSession: this.closeOverlay,
+      onAdvanceSession: this.advanceSession,
+
+      onTabHome: () => this.openTab('home'),
+      onTabProjects: () => this.openTab('projects'),
+      onTabAbout: () => this.openTab('about'),
+      onTabProfile: () => this.openTab('profile'),
+      navHomeActive, navProjectsActive, navAboutActive, navProfileActive,
+      navHomeStyle: navStyle(navHomeActive),
+      navProjectsStyle: navStyle(navProjectsActive),
+      navAboutStyle: navStyle(navAboutActive),
+      navProfileStyle: navStyle(navProfileActive),
+      navHomeIconColor: navHomeActive ? 'var(--on-accent)' : 'var(--text-faint)',
+      navProjectsIconColor: navProjectsActive ? 'var(--on-accent)' : 'var(--text-faint)',
+      navAboutIconColor: navAboutActive ? 'var(--on-accent)' : 'var(--text-faint)',
+      navProfileIconColor: navProfileActive ? 'var(--on-accent)' : 'var(--text-faint)'
+    };
+  }
+}
+
+</script>
+</body>
+</html>

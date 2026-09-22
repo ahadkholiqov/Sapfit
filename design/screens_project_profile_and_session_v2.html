@@ -1,0 +1,191 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+.compare-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.phone-frame {
+  background: #14161C;
+  border-radius: 26px;
+  padding: 8px;
+  border: 0.5px solid #2A2D3A;
+}
+.phone-screen {
+  background: #14161C;
+  border-radius: 20px;
+  min-height: 660px;
+  padding: 0 14px 14px;
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+.state-label { font-size: 11px; font-weight: 500; color: var(--text-muted); text-align: center; margin-bottom: 8px; }
+.status-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 2px 14px; font-size: 12px; color: #7B8296; }
+.page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.back-btn, .menu-btn { width: 30px; height: 30px; border-radius: 50%; background: #1E212E; border: 0.5px solid #2A2D3A; display: flex; align-items: center; justify-content: center; position: relative; }
+.back-btn i, .menu-btn i { font-size: 14px; color: #A5A9FF; }
+.header-left { display: flex; align-items: center; gap: 10px; }
+
+.proj-title { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 500; color: #E2E4EC; margin-bottom: 4px; }
+.proj-meta { font-size: 11px; color: #7B8296; margin-bottom: 16px; }
+.progress-big-track { display: flex; height: 10px; border-radius: 6px; overflow: hidden; background: #1A1D28; margin-bottom: 8px; }
+.pt-locked { background: #4ADE80; }
+.pt-learning { background: #6366F1; }
+.pt-ahead { background: #2A2D3A; }
+.progress-legend { display: flex; justify-content: space-between; font-size: 10px; color: #5A6480; margin-bottom: 18px; }
+.legend-item { display: flex; align-items: center; gap: 4px; }
+.legend-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+.section-lbl { font-size: 10px; color: #4D5266; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+.material-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+.material-icon { width: 28px; height: 28px; border-radius: 8px; background: #1E212E; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.material-icon i { font-size: 13px; color: #8B8FFA; }
+.material-name { font-size: 12px; color: #E2E4EC; flex: 1; }
+.add-material { display: flex; align-items: center; gap: 8px; padding: 10px 0; font-size: 12px; color: #7B8296; }
+.add-material i { font-size: 14px; }
+
+.schedule-block { background: #1E212E; border: 0.5px solid #2A2D3A; border-radius: 16px; padding: 12px; margin: 12px 0; }
+.schedule-row { display: flex; justify-content: space-between; font-size: 11px; padding: 4px 0; }
+.schedule-row span:first-child { color: #C5C8D6; }
+.schedule-row span:last-child { color: #5A6480; }
+
+.spacer { flex: 1; }
+.continue-btn { background: #6366F1; border-radius: 22px; padding: 14px; text-align: center; font-size: 14px; font-weight: 500; color: #F5F6FF; margin-bottom: 10px; }
+
+/* Dropdown menu from ... button */
+.dropdown-menu {
+  position: absolute; top: 36px; right: 0;
+  background: #262A3D; border: 0.5px solid #363A52; border-radius: 16px;
+  padding: 6px; width: 150px; z-index: 5;
+}
+.dd-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 10px; font-size: 11px; color: #C5C8D6; }
+.dd-item i { font-size: 13px; color: #8B8FFA; }
+.dd-item.danger i, .dd-item.danger span { color: #E88888; }
+
+/* Bottom nav shared */
+.bottom-nav {
+  display: flex;
+  background: rgba(38, 42, 61, 0.55);
+  border-radius: 32px;
+  padding: 6px;
+  border: 0.5px solid rgba(139, 143, 250, 0.18);
+  margin-top: 8px;
+  gap: 4px;
+}
+.nav-item { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 8px; border-radius: 24px; }
+.nav-item i { font-size: 18px; color: #4D5266; }
+.nav-item span { font-size: 0; width: 0; overflow: hidden; color: #4D5266; white-space: nowrap; }
+.nav-item.active { background: #6366F1; flex: 1.6; }
+.nav-item.active i { color: #F5F6FF; }
+.nav-item.active span { font-size: 11px; font-weight: 500; width: auto; margin-left: 2px; color: #F5F6FF; }
+
+/* Session workspace - lighter bg */
+.session-frame { background: #14161C !important; }
+.session-top-progress { height: 3px; background: #1E212E; border-radius: 2px; margin-bottom: 40px; overflow: hidden; }
+.session-top-progress-fill { height: 100%; width: 45%; background: #6366F1; }
+.session-close { display: flex; justify-content: flex-end; margin-bottom: 20px; }
+.session-close i { font-size: 16px; color: #4D5266; }
+.session-center { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 20px; }
+.session-question { font-family: 'Space Grotesk', sans-serif; font-size: 17px; font-weight: 500; color: #E2E4EC; text-align: center; line-height: 1.4; }
+.session-answer-field {
+  background: #1E212E; border: 0.5px solid #2A2D3A; border-radius: 20px;
+  padding: 16px; font-size: 13px; color: #5A6480; margin-top: 12px;
+}
+.session-next-btn {
+  background: #6366F1; border-radius: 22px; padding: 15px; text-align: center;
+  font-size: 14px; font-weight: 500; color: #F5F6FF; margin-top: auto;
+}
+</style>
+
+<h2 class="sr-only">Экраны Профиль проекта и Рабочая зона сессии, второй вариант</h2>
+
+<div class="compare-wrap">
+
+  <!-- SCREEN: Профиль проекта v2 -->
+  <div>
+    <div class="state-label">Профиль проекта — таббар сохранён, действия в меню</div>
+    <div class="phone-frame">
+      <div class="phone-screen">
+        <div class="status-bar"><span>10:38</span><span><i class="ti ti-wifi"></i></span></div>
+        <div class="page-header">
+          <div class="header-left">
+            <div class="back-btn"><i class="ti ti-chevron-left" aria-hidden="true"></i></div>
+          </div>
+          <div class="menu-btn">
+            <i class="ti ti-dots" aria-hidden="true"></i>
+            <div class="dropdown-menu">
+              <div class="dd-item"><i class="ti ti-calendar" aria-hidden="true"></i><span>Изменить дедлайн</span></div>
+              <div class="dd-item"><i class="ti ti-player-pause" aria-hidden="true"></i><span>Приостановить</span></div>
+              <div class="dd-item"><i class="ti ti-pin" aria-hidden="true"></i><span>Поставить приоритет</span></div>
+              <div class="dd-item danger"><i class="ti ti-trash" aria-hidden="true"></i><span>Удалить проект</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="proj-title">ОГЭ по физике</div>
+        <div class="proj-meta">Механика и законы движения · до 14 августа</div>
+
+        <div class="progress-big-track">
+          <div class="pt-locked" style="width:15%"></div>
+          <div class="pt-learning" style="width:35%"></div>
+          <div class="pt-ahead" style="width:50%"></div>
+        </div>
+        <div class="progress-legend">
+          <div class="legend-item"><span class="legend-dot" style="background:#4ADE80"></span>Закреплено 15%</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#6366F1"></span>Изучаем 35%</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#2A2D3A"></span>Впереди 50%</div>
+        </div>
+
+        <div class="section-lbl">Материалы (12)</div>
+        <div class="material-row">
+          <div class="material-icon"><i class="ti ti-file-text" aria-hidden="true"></i></div>
+          <div class="material-name">Конспект: законы Ньютона</div>
+        </div>
+        <div class="material-row">
+          <div class="material-icon"><i class="ti ti-photo" aria-hidden="true"></i></div>
+          <div class="material-name">Фото учебника, глава 4</div>
+        </div>
+        <div class="add-material"><i class="ti ti-plus" aria-hidden="true"></i>Добавить материал</div>
+
+        <div class="schedule-block">
+          <div class="section-lbl" style="margin-bottom:8px;">До дедлайна</div>
+          <div class="schedule-row"><span>Осталось сессий</span><span>6</span></div>
+          <div class="schedule-row"><span>Следующая</span><span>завтра, 18:00</span></div>
+        </div>
+
+        <div class="spacer"></div>
+        <div class="continue-btn">Продолжить обучение</div>
+
+        <div class="bottom-nav">
+          <div class="nav-item"><i class="ti ti-home" aria-hidden="true"></i></div>
+          <div class="nav-item active"><i class="ti ti-folder" aria-hidden="true"></i><span>Проекты</span></div>
+          <div class="nav-item"><i class="ti ti-chart-bar" aria-hidden="true"></i></div>
+          <div class="nav-item"><i class="ti ti-user" aria-hidden="true"></i></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN: Рабочая зона сессии v2 -->
+  <div>
+    <div class="state-label">Рабочая зона — светлее фон, без таббара (модалка)</div>
+    <div class="phone-frame">
+      <div class="phone-screen session-frame">
+        <div class="status-bar" style="color:#7B8296;"><span>10:41</span><span><i class="ti ti-wifi"></i></span></div>
+
+        <div class="session-close"><i class="ti ti-x" aria-hidden="true"></i></div>
+        <div class="session-top-progress"><div class="session-top-progress-fill"></div></div>
+
+        <div class="session-center">
+          <div class="session-question">Сформулируй третий закон Ньютона своими словами, без подглядывания в конспект</div>
+          <div class="session-answer-field">Напиши ответ здесь...</div>
+        </div>
+
+        <div class="session-next-btn">Дальше</div>
+      </div>
+    </div>
+  </div>
+
+</div>

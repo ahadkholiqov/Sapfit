@@ -1,0 +1,2280 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sapfit — Interactive Prototype</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#14161C; --card:#1E212E; --inset:#1A1D28; --surface:#262A3D;
+  --seg-bg:#262C4A; --seg-border:#4A50A8;
+  --border:#2A2D3A; --border-drop:#363A52;
+  --accent:#6366F1; --accent-text:#A5A9FF; --accent-soft:#8B8FFA; --on-accent:#F5F6FF;
+  --text:#E2E4EC; --text2:#7B8296; --text3:#C5C8D6; --muted:#5A6480; --faint:#4D5266;
+  --p-locked:#4ADE80; --p-learning:#6366F1; --p-ahead:#2A2D3A;
+  --danger:#E88888;
+  --nav-bg:rgba(38,42,61,0.75); --nav-border:rgba(139,143,250,0.18);
+  --r-tab:32px; --r-card:22px; --r-btn:24px; --r-inset:20px; --r-drop:16px;
+  --fh:'Space Grotesk','Inter',sans-serif;
+  --fb:'Inter',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:#000;
+  font-family:var(--fb);
+  color:var(--text);
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+  -webkit-font-smoothing:antialiased;
+}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+input,textarea{font:inherit;color:inherit;background:none;border:none;outline:none;width:100%}
+input:focus,textarea:focus{outline:none}
+ul{list-style:none}
+::-webkit-scrollbar{width:0;height:0}
+
+.device{
+  width:390px;height:844px;
+  background:var(--bg);
+  position:relative;overflow:hidden;
+  border-radius:44px;
+  box-shadow:0 30px 80px rgba(0,0,0,.6);
+  display:flex;flex-direction:column;
+}
+.status-bar{
+  height:44px;flex:none;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 28px;padding-top:12px;
+  font-family:var(--fh);font-weight:500;font-size:14px;color:var(--text);
+  z-index:100;
+}
+.status-bar .icons{display:flex;gap:5px;align-items:center}
+.status-bar svg{width:14px;height:14px}
+
+.main{position:relative;flex:1;overflow:hidden}
+.screen{
+  position:absolute;inset:0;
+  overflow-y:auto;overflow-x:hidden;
+  padding:8px 20px 110px;
+  display:none;
+  animation:fade .22s ease both;
+}
+.screen.active{display:block}
+.screen.no-tab{padding-bottom:24px}
+.screen.no-pad{padding:0 0 110px}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* HEADERS */
+.page-h{display:flex;align-items:center;justify-content:space-between;margin:16px 0 16px}
+.page-h h1{font-family:var(--fh);font-weight:500;font-size:20px;color:var(--text)}
+.icon-btn{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--card);border:0.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;color:var(--accent-soft);
+}
+.icon-btn svg{width:16px;height:16px}
+.back-btn{width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:var(--text);border-radius:50%;background:var(--card);border:0.5px solid var(--border)}
+.back-btn svg{width:16px;height:16px}
+
+/* CAPSULE TAB BAR */
+.tabbar{
+  position:absolute;left:20px;right:20px;bottom:24px;
+  height:56px;padding:6px;
+  border-radius:var(--r-tab);
+  background:var(--nav-bg);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:0.5px solid var(--nav-border);
+  display:flex;gap:4px;align-items:center;
+  box-shadow:0 12px 30px rgba(0,0,0,.35);
+  z-index:50;
+}
+.tabbar.hidden{display:none}
+.tab{
+  flex:1;height:44px;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  border-radius:24px;color:var(--faint);
+  transition:all .25s ease;
+  overflow:hidden;
+}
+.tab svg{width:20px;height:20px;flex:none}
+.tab .label{
+  font-family:var(--fb);font-size:12px;font-weight:500;
+  white-space:nowrap;display:none;color:var(--on-accent);
+}
+.tab.active{background:var(--accent);color:var(--on-accent);flex:1.8}
+.tab.active .label{display:inline}
+
+/* SEGMENTED CONTROL */
+.seg-group{
+  background:var(--inset);border-radius:26px;padding:4px;
+  display:flex;gap:2px;border:0.5px solid var(--border);
+}
+.seg{
+  flex:1;height:44px;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  border-radius:22px;color:var(--text2);
+  font-family:var(--fb);font-size:13px;font-weight:500;
+  transition:all .2s;
+}
+.seg svg{width:16px;height:16px}
+.seg.active{background:var(--seg-bg);border:0.5px solid var(--seg-border);color:var(--accent-text)}
+.seg.icon-only{padding:0}
+.seg.icon-only svg{width:18px;height:18px}
+
+/* CARDS */
+.card{
+  background:var(--card);
+  border-radius:var(--r-card);
+  border:0.5px solid var(--border);
+  padding:14px;
+}
+.card.pinned{border:1px solid var(--seg-border)}
+.card+.card{margin-top:10px}
+
+/* BUTTONS */
+.btn{
+  height:52px;padding:0 20px;
+  border-radius:26px;font-family:var(--fb);font-size:15px;font-weight:500;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:transform .1s;
+}
+.btn:active{transform:scale(.98)}
+.btn-primary{background:var(--accent);color:var(--on-accent)}
+.btn-primary:disabled{background:var(--inset);color:var(--faint);cursor:not-allowed}
+.btn-secondary{background:var(--card);color:var(--text);border:0.5px solid var(--border)}
+.btn-danger{background:var(--card);color:var(--danger);border:0.5px solid var(--border)}
+.btn-block{width:100%}
+.btn-sm{height:40px;font-size:13px;padding:0 14px;border-radius:20px}
+.btn-ghost{color:var(--text2);font-size:13px}
+
+/* FORMS */
+.field{margin-bottom:12px}
+.field label{display:block;font-family:var(--fb);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;font-weight:500}
+.input{
+  height:48px;padding:0 16px;
+  background:var(--card);border-radius:var(--r-inset);border:0.5px solid var(--border);
+  display:flex;align-items:center;color:var(--text);font-size:14px;
+}
+.input.multiline{height:auto;min-height:96px;padding:14px 16px;display:block}
+.input textarea{resize:none;min-height:70px;font-family:var(--fb)}
+.input-row{display:flex;gap:8px}
+.input-row .input{flex:1}
+.select-wrap{position:relative}
+.select-btn{
+  width:100%;height:48px;padding:0 16px;
+  background:var(--card);border-radius:var(--r-inset);border:0.5px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;color:var(--text);font-size:14px;
+  cursor:pointer;
+}
+.select-btn.placeholder{color:var(--muted)}
+.select-menu{
+  position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:20;
+  background:var(--card);border-radius:var(--r-drop);border:0.5px solid var(--border-drop);
+  padding:6px;display:none;
+  box-shadow:0 10px 30px rgba(0,0,0,.4);
+}
+.select-menu.open{display:block}
+.select-menu button{
+  width:100%;padding:10px 12px;border-radius:12px;
+  text-align:left;color:var(--text);font-size:14px;
+}
+.select-menu button:hover{background:var(--seg-bg)}
+
+/* PROGRESS 3-COLOR */
+.p3{margin-top:8px}
+.p3-bar{
+  height:8px;border-radius:4px;overflow:hidden;
+  background:var(--inset);display:flex;
+}
+.p3-bar span{display:block;height:100%}
+.p3-legend{
+  display:flex;justify-content:space-between;margin-top:8px;
+  font-size:10px;color:var(--muted);font-weight:400;
+}
+.p3-legend div{display:flex;align-items:center;gap:4px}
+.p3-legend i{width:6px;height:6px;border-radius:50%;display:inline-block}
+
+/* BANNERS */
+.banner-stack{margin:8px 0 14px;display:flex;flex-direction:column;gap:6px}
+.banner-reminder{
+  background:var(--card);border:0.5px solid var(--border);
+  border-radius:22px;padding:12px 14px;
+  animation:fade .3s;
+}
+.banner-reminder.stacked{transform:scale(.97);opacity:.7}
+.banner-reminder h4{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px}
+.banner-reminder p{font-size:11px;color:var(--text2);line-height:1.35}
+.banner-explainer{
+  background:var(--seg-bg);border:0.5px solid var(--seg-border);
+  border-radius:22px;padding:12px 14px 12px 40px;
+  position:relative;margin-bottom:14px;
+}
+.banner-explainer::before{
+  content:'';position:absolute;left:14px;top:14px;
+  width:16px;height:16px;border-radius:50%;
+  background:var(--accent-soft);
+  background-image:radial-gradient(circle at center, var(--on-accent) 2px, transparent 2px);
+}
+.banner-explainer h4{font-size:12px;font-weight:500;color:var(--accent-text);margin-bottom:2px}
+.banner-explainer p{font-size:11px;color:var(--text2);line-height:1.4}
+.banner-explainer .dismiss{position:absolute;right:14px;top:12px;color:var(--muted);width:14px;height:14px}
+
+/* PROJECT CARD */
+.proj-card .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.proj-card .title{display:flex;align-items:center;gap:6px;font-family:var(--fh);font-weight:500;font-size:15px;color:var(--text)}
+.proj-card .title svg{width:12px;height:12px;color:var(--accent-soft)}
+.proj-card .count{font-size:11px;color:var(--text2);flex:none}
+.proj-card .tags{display:flex;gap:6px;margin:8px 0}
+.tag{font-size:10px;padding:3px 8px;background:var(--inset);border-radius:10px;color:var(--text2);border:0.5px solid var(--border)}
+
+/* MODE SELECTOR */
+.home-hero{text-align:center;padding:20px 0 12px}
+.home-phrase{font-family:var(--fh);font-weight:500;font-size:22px;color:var(--text);min-height:32px}
+.mode-row{display:flex;gap:10px;margin:20px 0 12px}
+.mode-btn{
+  flex:1;height:88px;
+  background:var(--card);border:0.5px solid var(--border);border-radius:var(--r-inset);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  transition:all .2s;
+}
+.mode-btn svg{width:22px;height:22px;color:var(--accent-soft)}
+.mode-btn .label{font-family:var(--fb);font-size:13px;color:var(--text);font-weight:500}
+.mode-btn.active{background:var(--seg-bg);border:1px solid var(--seg-border)}
+.mode-btn.active svg,.mode-btn.active .label{color:var(--accent-text)}
+
+.gemini-row{
+  background:var(--card);border:0.5px solid var(--border);
+  border-radius:22px;padding:5px 5px 5px 8px;
+  display:flex;align-items:center;gap:4px;
+  margin-top:4px;position:relative;
+}
+.gemini-row .attach,.gemini-row .send{
+  width:34px;height:34px;border-radius:17px;
+  display:flex;align-items:center;justify-content:center;color:var(--text2);
+  flex:none;
+}
+.gemini-row .attach svg,.gemini-row .send svg{width:16px;height:16px}
+.gemini-row .send{background:var(--accent);color:var(--on-accent)}
+.gemini-row .send:disabled{background:var(--inset);color:var(--faint)}
+.gemini-row .attach:hover{background:var(--inset)}
+.gemini-row input{flex:1;padding:0 6px;font-size:14px;min-width:0}
+.gemini-row input::placeholder{color:var(--muted)}
+.attach-menu{
+  position:absolute;bottom:calc(100% + 8px);left:0;
+  background:var(--card);border:0.5px solid var(--border-drop);
+  border-radius:var(--r-drop);padding:6px;
+  display:none;z-index:30;box-shadow:0 12px 30px rgba(0,0,0,.5);
+  min-width:180px;
+}
+.attach-menu.open{display:block}
+.attach-menu button{
+  width:100%;padding:10px 12px;border-radius:12px;
+  display:flex;align-items:center;gap:10px;color:var(--text);font-size:14px;
+}
+.attach-menu button:hover{background:var(--seg-bg)}
+.attach-menu svg{width:16px;height:16px;color:var(--accent-soft)}
+
+.chip-attach{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--seg-bg);border:0.5px solid var(--seg-border);
+  border-radius:14px;padding:5px 10px 5px 8px;color:var(--accent-text);
+  font-size:11px;margin-top:8px;margin-right:6px;
+}
+.chip-attach svg{width:12px;height:12px}
+.chip-attach .rm{margin-left:4px;color:var(--text2);width:12px;height:12px}
+
+/* SESSION */
+.session-top{
+  position:sticky;top:0;padding:12px 0 14px;background:var(--bg);z-index:5;
+}
+.session-top .close{position:absolute;right:0;top:10px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;color:var(--text2)}
+.session-progress{
+  height:3px;background:var(--inset);border-radius:2px;overflow:hidden;
+}
+.session-progress span{display:block;height:100%;background:var(--accent);transition:width .35s ease}
+.session-body{
+  min-height:calc(100% - 60px);
+  display:flex;flex-direction:column;justify-content:center;
+  padding:40px 4px 24px;
+}
+.session-q{
+  font-family:var(--fh);font-weight:500;font-size:20px;line-height:1.35;
+  color:var(--text);text-align:center;margin-bottom:28px;
+}
+.session-explain{
+  font-size:14px;color:var(--text3);line-height:1.55;
+  padding:14px 16px;background:var(--card);border-radius:var(--r-card);border:0.5px solid var(--border);
+  margin-bottom:20px;
+}
+.session-input{
+  background:var(--card);border-radius:var(--r-inset);border:0.5px solid var(--border);
+  padding:14px 16px;min-height:100px;
+}
+.session-input textarea{min-height:80px;font-family:var(--fb);font-size:14px;resize:none}
+.session-input textarea::placeholder{color:var(--muted)}
+.session-actions{margin-top:16px}
+
+.branch-list{display:flex;flex-direction:column;gap:10px;margin-top:20px}
+.branch-item{
+  padding:16px 18px;background:var(--card);
+  border-radius:var(--r-card);border:0.5px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  transition:all .2s;
+}
+.branch-item:hover{border-color:var(--seg-border);background:var(--seg-bg)}
+.branch-item .title{font-family:var(--fb);font-size:14px;color:var(--text);font-weight:500}
+.branch-item .sub{font-size:11px;color:var(--text2);margin-top:2px}
+.branch-item svg{color:var(--accent-soft);width:16px;height:16px}
+
+.mcq{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.mcq button{
+  padding:14px 16px;background:var(--card);
+  border-radius:var(--r-inset);border:0.5px solid var(--border);
+  color:var(--text);font-size:14px;text-align:left;
+  transition:all .2s;
+}
+.mcq button:hover{border-color:var(--seg-border)}
+.mcq button.selected{border-color:var(--seg-border);background:var(--seg-bg);color:var(--accent-text)}
+
+.session-loading{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:100%;padding:20px;text-align:center;
+}
+.spinner{width:36px;height:36px;border:2px solid var(--inset);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:20px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-phrase{font-size:14px;color:var(--text2);animation:fade .5s}
+.session-done{
+  text-align:center;padding:60px 20px 20px;
+}
+.session-done .icon-big{
+  width:64px;height:64px;margin:0 auto 20px;
+  background:var(--seg-bg);border:1px solid var(--seg-border);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  color:var(--accent-text);
+}
+.session-done .icon-big svg{width:28px;height:28px}
+.session-done h2{font-family:var(--fh);font-weight:500;font-size:22px;color:var(--text);margin-bottom:12px}
+.session-done p{color:var(--text2);font-size:13px;line-height:1.5;margin-bottom:24px}
+
+/* PROJECT DETAIL */
+.pd-title{font-family:var(--fh);font-weight:500;font-size:22px;color:var(--text);margin-bottom:4px}
+.pd-meta{font-size:12px;color:var(--text2);margin-bottom:16px}
+.pd-section{margin-bottom:16px}
+.pd-section h3{font-family:var(--fb);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:500;margin-bottom:8px;padding:0 4px}
+.mat-item{
+  background:var(--card);border-radius:var(--r-drop);border:0.5px solid var(--border);
+  padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:6px;
+}
+.mat-item .mtype{width:28px;height:28px;border-radius:8px;background:var(--seg-bg);display:flex;align-items:center;justify-content:center;color:var(--accent-soft)}
+.mat-item .mtype svg{width:14px;height:14px}
+.mat-item .name{flex:1;font-size:13px;color:var(--text)}
+.schedule-row{display:flex;gap:10px}
+.schedule-row .card{flex:1;text-align:center}
+.schedule-row .label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;font-weight:500}
+.schedule-row .value{font-family:var(--fh);font-weight:500;font-size:16px;color:var(--text)}
+.format-block{}
+.format-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:0.5px solid var(--border)}
+.format-row:last-child{border-bottom:0}
+.format-row .lbl{font-size:13px;color:var(--text)}
+.format-row .val{font-size:12px;color:var(--accent-text)}
+.dot-menu{
+  position:absolute;top:60px;right:20px;z-index:30;
+  background:var(--card);border:0.5px solid var(--border-drop);
+  border-radius:var(--r-drop);padding:6px;
+  min-width:200px;display:none;
+  box-shadow:0 12px 30px rgba(0,0,0,.5);
+}
+.dot-menu.open{display:block}
+.dot-menu button{
+  width:100%;padding:10px 12px;border-radius:12px;
+  text-align:left;color:var(--text);font-size:14px;display:flex;align-items:center;gap:10px;
+}
+.dot-menu button svg{width:14px;height:14px;color:var(--accent-soft)}
+.dot-menu button:hover{background:var(--seg-bg)}
+.dot-menu button.danger{color:var(--danger)}
+.dot-menu button.danger svg{color:var(--danger)}
+.pd-cta{margin-top:20px}
+
+/* CALIBRATION */
+.calib-item{
+  background:var(--card);border-radius:var(--r-inset);border:0.5px solid var(--border);
+  padding:12px 14px;margin-bottom:8px;
+}
+.calib-item .name{font-size:14px;color:var(--text);font-weight:500;margin-bottom:8px}
+.calib-item .toggle{display:flex;gap:4px;background:var(--inset);border-radius:14px;padding:3px;border:0.5px solid var(--border)}
+.calib-item .toggle button{
+  flex:1;height:34px;border-radius:12px;
+  font-size:11px;color:var(--text2);font-weight:500;
+}
+.calib-item .toggle button.active{background:var(--seg-bg);border:0.5px solid var(--seg-border);color:var(--accent-text)}
+
+/* ABOUT */
+.about-tabs{margin-bottom:14px}
+.about-content{padding-bottom:20px}
+.dots{display:flex;justify-content:center;gap:6px;margin:12px 0 6px}
+.dots span{width:6px;height:6px;border-radius:50%;background:var(--faint)}
+.dots span.on{background:var(--accent-soft);width:16px;border-radius:3px}
+.stat-intro{padding:14px 16px;background:var(--card);border-radius:var(--r-card);border:0.5px solid var(--border);margin-bottom:14px;font-size:13px;color:var(--text3);line-height:1.5}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stat-tile{background:var(--card);border-radius:var(--r-inset);border:0.5px solid var(--border);padding:14px}
+.stat-tile .n{font-family:var(--fh);font-weight:500;font-size:22px;color:var(--text)}
+.stat-tile .l{font-size:11px;color:var(--text2);margin-top:4px}
+.heatmap{background:var(--card);border-radius:var(--r-card);border:0.5px solid var(--border);padding:14px}
+.heatmap h4{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:500;margin-bottom:10px}
+.heatmap .grid{display:grid;grid-template-columns:repeat(15,1fr);gap:3px}
+.heatmap .cell{aspect-ratio:1;border-radius:3px;background:var(--inset)}
+.heatmap .cell.l1{background:rgba(139,143,250,.2)}
+.heatmap .cell.l2{background:rgba(139,143,250,.45)}
+.heatmap .cell.l3{background:rgba(139,143,250,.75)}
+.heatmap .cell.l4{background:var(--accent)}
+.method-item{
+  background:var(--card);border-radius:var(--r-inset);border:0.5px solid var(--border);
+  padding:12px 14px;margin-bottom:8px;
+}
+.method-item .top{display:flex;justify-content:space-between;margin-bottom:8px}
+.method-item .name{font-size:13px;color:var(--text);font-weight:500}
+.method-item .pct{font-size:12px;color:var(--accent-text)}
+.method-item .bar{height:5px;background:var(--inset);border-radius:3px;overflow:hidden}
+.method-item .bar span{display:block;height:100%;background:var(--accent);border-radius:3px}
+.obs-item{
+  background:var(--card);border-radius:var(--r-card);border:0.5px solid var(--border);
+  padding:14px 16px;margin-bottom:10px;
+}
+.obs-item .date{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;font-weight:500}
+.obs-item .text{font-size:13px;color:var(--text3);line-height:1.5}
+
+/* REGISTRY */
+.tech-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tech-card{
+  background:var(--card);border-radius:var(--r-card);border:0.5px solid var(--border);
+  padding:12px;min-height:120px;display:flex;flex-direction:column;gap:6px;
+}
+.tech-card.full{border:1px solid var(--seg-border)}
+.tech-card.short{opacity:.7}
+.tech-card .icon{width:26px;height:26px;border-radius:8px;background:var(--seg-bg);display:flex;align-items:center;justify-content:center;color:var(--accent-soft)}
+.tech-card .icon svg{width:14px;height:14px}
+.tech-card .name{font-family:var(--fh);font-weight:500;font-size:13px;color:var(--text)}
+.tech-card .short-desc{font-size:11px;color:var(--text2);line-height:1.4;margin-top:2px}
+.tech-card .try{font-size:11px;color:var(--accent-text);margin-top:auto;font-weight:500}
+
+.tech-detail-block{margin-bottom:14px}
+.tech-detail-block h4{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:500;margin-bottom:6px}
+.tech-detail-block p{font-size:13px;color:var(--text3);line-height:1.55}
+
+/* PROFILE ROWS */
+.settings-group{margin-bottom:14px}
+.settings-group h3{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:500;margin-bottom:6px;padding:0 6px}
+.set-row{
+  background:var(--card);border-radius:var(--r-inset);border:0.5px solid var(--border);
+  padding:12px 14px;margin-bottom:6px;
+  display:flex;align-items:center;gap:12px;
+}
+.set-row .ic{width:32px;height:32px;border-radius:10px;background:var(--seg-bg);display:flex;align-items:center;justify-content:center;color:var(--accent-soft);flex:none}
+.set-row .ic svg{width:15px;height:15px}
+.set-row .body{flex:1}
+.set-row .body h4{font-size:13px;color:var(--text);font-weight:500;margin-bottom:2px}
+.set-row .body p{font-size:11px;color:var(--text2);line-height:1.35}
+.set-row .chev{color:var(--muted);width:14px;height:14px}
+
+/* ONBOARDING */
+.ob-frame{padding:0 4px}
+.ob-progress{
+  height:3px;background:var(--inset);border-radius:2px;overflow:hidden;margin:8px 0 24px;
+}
+.ob-progress span{display:block;height:100%;background:var(--accent);transition:width .3s}
+.skip-demo{
+  position:absolute;top:14px;right:16px;
+  font-size:10px;color:var(--muted);letter-spacing:.03em;
+  padding:6px 10px;border-radius:12px;font-family:monospace;
+  z-index:10;
+}
+.skip-demo:hover{color:var(--text2)}
+.ob-title{font-family:var(--fh);font-weight:500;font-size:22px;color:var(--text);line-height:1.35;margin-bottom:8px}
+.ob-sub{font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:24px}
+.ob-question{font-family:var(--fh);font-weight:500;font-size:19px;color:var(--text);line-height:1.4;margin:12px 0 20px}
+.ob-options{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.ob-option{
+  padding:14px 16px;background:var(--card);
+  border-radius:var(--r-inset);border:0.5px solid var(--border);
+  color:var(--text);font-size:14px;text-align:left;
+  transition:all .2s;
+}
+.ob-option:hover{border-color:var(--seg-border)}
+.ob-option.selected{border-color:var(--seg-border);background:var(--seg-bg);color:var(--accent-text)}
+.ob-cta{position:sticky;bottom:0;padding-top:8px;background:var(--bg);padding-bottom:20px}
+
+.sso-btn{
+  height:52px;width:100%;border-radius:26px;
+  background:var(--card);border:0.5px solid var(--border);
+  color:var(--text);font-size:14px;font-weight:500;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  margin-bottom:10px;
+}
+.sso-btn svg{width:18px;height:18px}
+.consent{display:flex;align-items:flex-start;gap:8px;margin-top:14px;font-size:12px;color:var(--text2);line-height:1.4;padding:0 4px}
+.consent input{width:16px;height:16px;flex:none;accent-color:var(--accent);cursor:pointer;margin-top:2px}
+
+.logo-hero{
+  width:64px;height:64px;margin:56px auto 24px;
+  background:linear-gradient(135deg,#1E212E,#14161C);
+  border:1px solid var(--border);
+  border-radius:20px;display:flex;align-items:center;justify-content:center;
+}
+.logo-hero svg{width:32px;height:32px;color:var(--text)}
+.logo-inline{
+  width:34px;height:34px;border-radius:10px;
+  background:linear-gradient(135deg,#1E212E,#14161C);
+  border:0.5px solid var(--border);
+  display:inline-flex;align-items:center;justify-content:center;color:var(--text);
+}
+.logo-inline svg{width:18px;height:18px}
+
+.obs-out{margin-bottom:12px;padding:14px 16px;background:var(--card);border-radius:var(--r-card);border:0.5px solid var(--border)}
+.obs-out .num{font-size:10px;color:var(--accent-text);letter-spacing:.06em;text-transform:uppercase;font-weight:500;margin-bottom:6px}
+.obs-out p{font-size:13px;color:var(--text3);line-height:1.55}
+
+.hint{margin-top:10px;font-size:11px;color:var(--muted);line-height:1.4}
+
+/* SORTING DROPDOWN */
+.sort-menu{
+  position:absolute;top:60px;right:20px;z-index:30;
+  background:var(--card);border:0.5px solid var(--border-drop);
+  border-radius:var(--r-drop);padding:6px;min-width:180px;
+  display:none;box-shadow:0 12px 30px rgba(0,0,0,.5);
+}
+.sort-menu.open{display:block}
+.sort-menu button{
+  width:100%;padding:10px 12px;border-radius:12px;
+  text-align:left;color:var(--text);font-size:13px;
+}
+.sort-menu button.active{background:var(--seg-bg);color:var(--accent-text)}
+
+.hist-item{
+  background:var(--card);border-radius:var(--r-card);border:0.5px solid var(--border);
+  padding:12px 14px;margin-bottom:8px;
+}
+.hist-item h4{font-size:14px;color:var(--text);font-weight:500;margin-bottom:4px}
+.hist-item .meta{font-size:11px;color:var(--text2);margin-bottom:10px}
+.hist-actions{display:flex;gap:6px;flex-wrap:wrap}
+.hist-actions .btn-sm{background:var(--inset);color:var(--text3);border:0.5px solid var(--border)}
+.hist-actions .btn-sm.danger{color:var(--danger)}
+
+.empty{padding:60px 20px;text-align:center;color:var(--text2);font-size:13px}
+
+.demo-badge{
+  position:absolute;left:50%;transform:translateX(-50%);bottom:8px;
+  background:rgba(232,136,136,.15);border:0.5px solid var(--danger);
+  border-radius:12px;padding:4px 10px;font-size:9px;color:var(--danger);letter-spacing:.05em;
+  text-transform:uppercase;font-weight:500;z-index:200;
+}
+</style>
+</head>
+<body>
+
+<div class="device" id="device">
+
+<div class="status-bar">
+  <span>10:24</span>
+  <div class="icons">
+    <svg viewBox="0 0 20 20" fill="currentColor"><rect x="2" y="10" width="2.5" height="6" rx="0.5"/><rect x="6" y="7" width="2.5" height="9" rx="0.5"/><rect x="10" y="4" width="2.5" height="12" rx="0.5"/><rect x="14" y="1" width="2.5" height="15" rx="0.5"/></svg>
+    <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 14a2 2 0 100 4 2 2 0 000-4zM4 9.5a8 8 0 0112 0l-1.5 1.5a6 6 0 00-9 0L4 9.5zM7 12a4 4 0 016 0l-1.5 1.5a2 2 0 00-3 0L7 12z"/></svg>
+    <svg viewBox="0 0 24 12" fill="none" stroke="currentColor"><rect x="0.5" y="0.5" width="20" height="11" rx="2.5"/><rect x="21.5" y="4" width="1.5" height="4" fill="currentColor"/><rect x="2" y="2" width="16" height="8" rx="1" fill="currentColor"/></svg>
+  </div>
+</div>
+
+<main class="main" id="main">
+
+<!-- ============ SVG ICON LIBRARY ============ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2h-4a2 2 0 01-2-2v-6H10v6a2 2 0 01-2 2H4a2 2 0 01-2-2z"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+    <symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+    <symbol id="i-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+    <symbol id="i-trending" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+    <symbol id="i-chev-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></symbol>
+    <symbol id="i-chev-d" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></symbol>
+    <symbol id="i-arrow-l" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/></symbol>
+    <symbol id="i-paperclip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 00-1.11-1.79l-1.78-.9A2 2 0 0115 10.76V6h1a2 2 0 002-2V3H6v1a2 2 0 002 2h1v4.76a2 2 0 01-1.11 1.79l-1.78.9A2 2 0 005 15.24V17z"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+    <symbol id="i-lightbulb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 00-4 12c1 1 2 2 2 3v1h4v-1c0-1 1-2 2-3a7 7 0 00-4-12z"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0112 4.5v15A2.5 2.5 0 019.5 22 2.5 2.5 0 017 19.5v-.5A2.5 2.5 0 014.5 16 2.5 2.5 0 012 13.5v-.5A2.5 2.5 0 014.5 10 2.5 2.5 0 012 7.5v-.5A2.5 2.5 0 014.5 4.5 2.5 2.5 0 017 2h2.5z"/><path d="M14.5 2A2.5 2.5 0 0012 4.5v15A2.5 2.5 0 0014.5 22 2.5 2.5 0 0017 19.5v-.5A2.5 2.5 0 0119.5 16 2.5 2.5 0 0022 13.5v-.5A2.5 2.5 0 0019.5 10 2.5 2.5 0 0022 7.5v-.5A2.5 2.5 0 0019.5 4.5 2.5 2.5 0 0017 2h-2.5z"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+    <symbol id="i-palette" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="1.5"/><circle cx="17.5" cy="10.5" r="1.5"/><circle cx="8.5" cy="7.5" r="1.5"/><circle cx="6.5" cy="12.5" r="1.5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.5-.7 1.5-1.5 0-.4-.2-.8-.4-1.1-.2-.3-.4-.7-.4-1.1 0-.8.7-1.5 1.5-1.5H16c3.3 0 6-2.7 6-6 0-5-4.5-9-10-9z"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></symbol>
+    <symbol id="i-google" viewBox="0 0 24 24" fill="currentColor"><path d="M22.5 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></symbol>
+    <symbol id="i-apple" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></symbol>
+    <symbol id="i-sparkle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/></symbol>
+    <symbol id="i-map" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></symbol>
+  </defs>
+</svg>
+
+<!-- ============ ONBOARDING WAVE 1 ============ -->
+
+<section class="screen no-tab" data-screen="ob_welcome">
+  <div class="logo-hero">
+    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="16" cy="16" r="1.5" fill="currentColor"/><path d="M16 8a8 8 0 01 6.9 12" stroke-linecap="round"/><path d="M22 22a8 8 0 01-11.5 0" stroke-linecap="round" opacity=".55"/><path d="M9 10a10 10 0 01 14 0" stroke-linecap="round" opacity=".3"/></svg>
+  </div>
+  <h1 style="font-family:var(--fh);font-weight:500;font-size:28px;text-align:center;color:var(--text);margin-bottom:10px">Sapfit</h1>
+  <p style="text-align:center;color:var(--text2);font-size:14px;line-height:1.5;margin-bottom:36px">Продукт учится вместе с тобой,<br>чтобы помогать именно тебе.</p>
+  <button class="sso-btn" data-action="ob-sso" data-provider="google"><svg><use href="#i-google"/></svg>Продолжить с Google</button>
+  <button class="sso-btn" data-action="ob-sso" data-provider="apple"><svg><use href="#i-apple"/></svg>Продолжить с Apple</button>
+  <label class="consent"><input type="checkbox" id="c1"><span>Принимаю условия использования</span></label>
+  <label class="consent"><input type="checkbox" id="c2"><span>Принимаю политику конфиденциальности</span></label>
+  <button class="skip-demo" data-action="skip-demo">Пропустить (демо) →</button>
+</section>
+
+<section class="screen no-tab" data-screen="ob_profile">
+  <button class="skip-demo" data-action="skip-demo">Пропустить (демо) →</button>
+  <h2 class="ob-title" style="margin-top:44px">Расскажи о себе</h2>
+  <p class="ob-sub">Это займёт полминуты. Дальше — 10 вопросов, чтобы мы собрали первую гипотезу о том, как тебе лучше учиться.</p>
+  <div class="field">
+    <label>Имя</label>
+    <div class="input"><input type="text" id="ob-name" placeholder="Например, Максим"></div>
+  </div>
+  <div class="field">
+    <label>Возраст</label>
+    <div class="input"><input type="number" id="ob-age" placeholder="14–18"></div>
+  </div>
+  <div class="field">
+    <label>Учебная ситуация</label>
+    <div class="select-wrap">
+      <button class="select-btn placeholder" data-action="toggle-select" data-select="ob-situation"><span id="ob-situation-label">Выбери вариант</span><svg style="width:14px;height:14px"><use href="#i-chev-d"/></svg></button>
+      <div class="select-menu" data-select-menu="ob-situation">
+        <button data-select-value="ob-situation" data-value="Школьник">Школьник</button>
+        <button data-select-value="ob-situation" data-value="Готовлюсь к экзаменам">Готовлюсь к экзаменам</button>
+        <button data-select-value="ob-situation" data-value="Студент">Студент</button>
+        <button data-select-value="ob-situation" data-value="Учу для себя">Учу для себя</button>
+      </div>
+    </div>
+  </div>
+  <button class="btn btn-primary btn-block" style="margin-top:20px" data-action="ob-profile-next">Пройти первую настройку</button>
+</section>
+
+<section class="screen no-tab" data-screen="ob_question">
+  <button class="skip-demo" data-action="skip-demo">Пропустить (демо) →</button>
+  <div class="ob-progress" style="margin-top:44px"><span id="ob-q-progress"></span></div>
+  <div style="text-align:center;font-size:10px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-weight:500;margin-bottom:8px" id="ob-q-counter">Вопрос 1 из 10</div>
+  <h3 class="ob-question" id="ob-q-text"></h3>
+  <div class="ob-options" id="ob-q-options"></div>
+  <div class="input multiline" id="ob-q-text-input" style="display:none"><textarea id="ob-q-freetext" placeholder="Напиши в двух словах (это поле необязательное)…"></textarea></div>
+  <div class="ob-cta">
+    <button class="btn btn-primary btn-block" data-action="ob-question-next" id="ob-q-next" disabled>Далее</button>
+  </div>
+</section>
+
+<section class="screen no-tab" data-screen="ob_processing">
+  <div class="session-loading">
+    <div class="spinner"></div>
+    <div class="loading-phrase" id="ob-proc-phrase">Обрабатываю ответы…</div>
+  </div>
+</section>
+
+<section class="screen no-tab" data-screen="ob_observations">
+  <h2 class="ob-title" style="margin-top:20px">Три наблюдения о тебе</h2>
+  <p class="ob-sub">На основе того, что ты рассказал. Это стартовая гипотеза — всё можно поменять позже.</p>
+  <div class="obs-out">
+    <div class="num">Наблюдение 1</div>
+    <p>Ты спишь около 5–6 часов в будни. Это ниже уровня, при котором мозг подростка нормально закрепляет то, что он учит — во сне идёт консолидация памяти. Мы будем короче делать вечерние сессии и переносить больше повторений на утро.</p>
+  </div>
+  <div class="obs-out">
+    <div class="num">Наблюдение 2</div>
+    <p>Ты сказал, что обычно перечитываешь конспект перед контрольной. Это одна из самых субъективно комфортных, но объективно слабых стратегий — она даёт ощущение понимания без реального запоминания. Мы сразу переведём тебя на активное припоминание вместо перечитывания.</p>
+  </div>
+  <div class="obs-out">
+    <div class="num">Наблюдение 3</div>
+    <p>Бывает, что учил-учил, а на контрольной не вспомнил — и это довольно частое чувство. Обычно это не про способности, а про то, что материал не был закреплён вовремя. Мы будем возвращать тебя к темам заранее, до того как они успеют забыться.</p>
+  </div>
+  <button class="btn btn-primary btn-block" style="margin-top:20px" data-action="show-screen" data-screen="ob_mini_intro">Продолжить</button>
+</section>
+
+<section class="screen no-tab" data-screen="ob_mini_intro">
+  <h2 class="ob-title" style="margin-top:44px">Первая мини-сессия</h2>
+  <p class="ob-sub">Чтобы почувствовать продукт в деле — сейчас короткая практика на 1–2 минуты. Возьмём демо-материал по биологии.</p>
+  <div class="card" style="margin-bottom:16px">
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:500;margin-bottom:6px">Демо-материал</div>
+    <div style="font-family:var(--fh);font-weight:500;font-size:15px;color:var(--text);margin-bottom:6px">Строение клетки</div>
+    <div style="font-size:12px;color:var(--text2);line-height:1.5">Клетка — базовая единица живого. Внутри — мембрана, ядро, органеллы. Митохондрии производят энергию, рибосомы — белок.</div>
+  </div>
+  <button class="btn btn-primary btn-block" data-action="show-screen" data-screen="ob_mini_q">Начать</button>
+  <button class="btn btn-secondary btn-block" style="margin-top:10px" data-action="show-screen" data-screen="ob_done">Пропустить</button>
+</section>
+
+<section class="screen no-tab" data-screen="ob_mini_q">
+  <div class="session-top">
+    <div class="session-progress"><span style="width:50%"></span></div>
+  </div>
+  <div class="session-body">
+    <div class="session-q">Объясни своими словами, зачем клетке нужны митохондрии.</div>
+    <div class="session-input"><textarea placeholder="Напиши ответ здесь (например: чтобы производить...)"></textarea></div>
+    <button class="btn btn-primary btn-block" style="margin-top:16px" data-action="show-screen" data-screen="ob_mini_done">Дальше</button>
+  </div>
+</section>
+
+<section class="screen no-tab" data-screen="ob_mini_done">
+  <div class="session-done">
+    <div class="icon-big"><svg><use href="#i-check"/></svg></div>
+    <h2>Готово!</h2>
+    <p>Так работает быстрая сессия. Дальше — само приложение, где ты сможешь работать со своими материалами.</p>
+    <button class="btn btn-primary btn-block" data-action="finish-onboarding">Перейти в приложение</button>
+  </div>
+</section>
+
+<section class="screen no-tab" data-screen="ob_done">
+  <div class="session-done">
+    <div class="icon-big"><svg><use href="#i-sparkle"/></svg></div>
+    <h2>Всё готово</h2>
+    <p>Стартовые настройки применены. Ты в любой момент можешь их изменить в разделе «О тебе» → «Мои методы».</p>
+    <button class="btn btn-primary btn-block" data-action="finish-onboarding">Перейти в приложение</button>
+  </div>
+</section>
+
+<!-- ============ ONBOARDING WAVE 2 ============ -->
+
+<section class="screen no-tab" data-screen="ob2_intro">
+  <div class="page-h" style="margin-top:12px">
+    <button class="back-btn" data-action="show-screen" data-screen="home"><svg><use href="#i-arrow-l"/></svg></button>
+    <div></div>
+  </div>
+  <h2 class="ob-title" style="margin-top:20px">Углублённая настройка</h2>
+  <p class="ob-sub">Сейчас попробуем несколько способов работы с материалом на практике. Займёт 15–20 минут — можно бросить в любой момент.</p>
+  <button class="btn btn-primary btn-block" data-action="show-screen" data-screen="ob2_subject">Пройти сейчас</button>
+  <button class="btn btn-secondary btn-block" style="margin-top:10px" data-action="show-screen" data-screen="home">Отменить</button>
+</section>
+
+<section class="screen no-tab" data-screen="ob2_subject">
+  <div class="page-h" style="margin-top:12px">
+    <button class="back-btn" data-action="show-screen" data-screen="ob2_intro"><svg><use href="#i-arrow-l"/></svg></button>
+    <div></div>
+  </div>
+  <h3 class="ob-question" style="margin-top:12px">В чём хочешь стать сильнее?</h3>
+  <div class="ob-options">
+    <button class="ob-option" data-action="ob2-subject" data-value="Биология">Биология</button>
+    <button class="ob-option" data-action="ob2-subject" data-value="История">История</button>
+    <button class="ob-option" data-action="ob2-subject" data-value="Математика">Математика</button>
+    <button class="ob-option" data-action="ob2-subject" data-value="Физика">Физика</button>
+    <button class="ob-option" data-action="ob2-subject" data-value="Английский">Английский</button>
+    <button class="ob-option" data-action="ob2-subject" data-value="Обществознание">Обществознание</button>
+  </div>
+</section>
+
+<section class="screen no-tab" data-screen="ob2_demo">
+  <div class="page-h" style="margin-top:12px">
+    <button class="back-btn" data-action="show-screen" data-screen="ob2_subject"><svg><use href="#i-arrow-l"/></svg></button>
+    <div></div>
+  </div>
+  <h3 class="ob-question" style="margin-top:12px">Возьмём демо-тему: <span id="ob2-demo-topic">клеточное строение</span></h3>
+  <p class="ob-sub">Дальше — три техники обучения, каждую попробуем на этой теме по 2 минуты. В конце ты скажешь, что тебе больше подошло.</p>
+  <button class="btn btn-primary btn-block" data-action="ob2-start-tech" data-idx="0">Начать</button>
+</section>
+
+<section class="screen no-tab" data-screen="ob2_tech">
+  <div class="ob-progress" style="margin-top:12px"><span id="ob2-tech-progress"></span></div>
+  <div style="text-align:center;font-size:10px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-weight:500;margin:6px 0 12px" id="ob2-tech-counter">Техника 1 из 3</div>
+  <h3 class="ob-question" id="ob2-tech-name">Метод Фейнмана</h3>
+  <div class="card" style="margin-bottom:16px">
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:500;margin-bottom:6px">Суть</div>
+    <p style="font-size:13px;color:var(--text3);line-height:1.5" id="ob2-tech-desc">Объясни тему простыми словами, как младшему брату. Где начинаешь путаться — там пробел в понимании.</p>
+  </div>
+  <div class="card" style="margin-bottom:16px">
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:500;margin-bottom:6px">Мини-практика</div>
+    <p style="font-size:13px;color:var(--text3);line-height:1.5;margin-bottom:10px" id="ob2-tech-task">Объясни, зачем клетке нужны митохондрии — представь, что говоришь пятикласснику.</p>
+    <div class="input multiline"><textarea placeholder="Твой ответ…"></textarea></div>
+  </div>
+  <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Как тебе, зашло?</div>
+  <div class="ob-options">
+    <button class="ob-option" data-action="ob2-rate" data-value="yes">Зашло</button>
+    <button class="ob-option" data-action="ob2-rate" data-value="rather">Скорее да</button>
+    <button class="ob-option" data-action="ob2-rate" data-value="not-really">Скорее нет</button>
+    <button class="ob-option" data-action="ob2-rate" data-value="no">Не моё</button>
+  </div>
+</section>
+
+<section class="screen no-tab" data-screen="ob2_format">
+  <div class="page-h" style="margin-top:12px">
+    <div></div><div></div>
+  </div>
+  <h3 class="ob-question" style="margin-top:12px" id="ob2-fmt-q">Когда тебе продуктивнее?</h3>
+  <div class="ob-options" id="ob2-fmt-opts"></div>
+</section>
+
+<section class="screen no-tab" data-screen="ob2_config">
+  <h2 class="ob-title" style="margin-top:12px">Вот стартовая гипотеза</h2>
+  <p class="ob-sub">Всё это можно поменять уже сейчас или позже — в «О тебе» → «Мои методы» и в «Профиль» → «Занятия».</p>
+  <div class="card" style="margin-bottom:10px">
+    <div style="font-size:11px;color:var(--accent-text);text-transform:uppercase;letter-spacing:.06em;font-weight:500;margin-bottom:8px">Приоритет техник</div>
+    <div id="ob2-cfg-techs" style="font-size:13px;color:var(--text3);line-height:1.6"></div>
+  </div>
+  <div class="card" style="margin-bottom:10px">
+    <div style="font-size:11px;color:var(--accent-text);text-transform:uppercase;letter-spacing:.06em;font-weight:500;margin-bottom:8px">Формат работы</div>
+    <div id="ob2-cfg-format" style="font-size:13px;color:var(--text3);line-height:1.6"></div>
+  </div>
+  <button class="btn btn-primary btn-block" style="margin-top:20px" data-action="ob2-finish">Оставить как есть</button>
+  <button class="btn btn-secondary btn-block" style="margin-top:10px" data-action="ob2-finish">Отредактирую позже</button>
+</section>
+
+<!-- ============ HOME ============ -->
+
+<section class="screen" data-screen="home">
+  <div id="banner-stack" class="banner-stack"></div>
+  <div id="wave2-banner"></div>
+  <div class="home-hero">
+    <div class="home-phrase" id="home-phrase">Чем займёмся сегодня?</div>
+  </div>
+  <div class="mode-row">
+    <button class="mode-btn" data-action="home-mode" data-mode="quick" id="mode-quick">
+      <svg><use href="#i-zap"/></svg>
+      <span class="label">Быстрая сессия</span>
+    </button>
+    <button class="mode-btn" data-action="home-mode" data-mode="project" id="mode-project">
+      <svg><use href="#i-trending"/></svg>
+      <span class="label">Проект</span>
+    </button>
+  </div>
+  <div id="home-attachments"></div>
+  <div class="gemini-row">
+    <button class="attach" data-action="toggle-attach"><svg><use href="#i-paperclip"/></svg></button>
+    <div class="attach-menu" id="attach-menu">
+      <button data-action="home-attach" data-type="camera"><svg><use href="#i-camera"/></svg>Снять фото</button>
+      <button data-action="home-attach" data-type="image"><svg><use href="#i-image"/></svg>Фото из галереи</button>
+      <button data-action="home-attach" data-type="file"><svg><use href="#i-file"/></svg>Файл</button>
+    </div>
+    <input type="text" id="home-input" placeholder="Вставь текст или опиши тему…">
+    <button class="send" data-action="home-send" id="home-send" disabled><svg><use href="#i-send"/></svg></button>
+  </div>
+</section>
+
+<!-- ============ QUICK SESSION FLOW ============ -->
+
+<section class="screen no-tab" data-screen="session_processing">
+  <div class="session-top">
+    <button class="close" data-action="show-screen" data-screen="home"><svg><use href="#i-x"/></svg></button>
+    <div class="session-progress"><span style="width:5%"></span></div>
+  </div>
+  <div class="session-loading">
+    <div class="spinner"></div>
+    <div class="loading-phrase" id="session-proc-phrase">Анализируем материалы…</div>
+  </div>
+</section>
+
+<section class="screen no-tab" data-screen="session_branch">
+  <div class="session-top">
+    <button class="close" data-action="show-screen" data-screen="home"><svg><use href="#i-x"/></svg></button>
+    <div class="session-progress"><span style="width:15%"></span></div>
+  </div>
+  <div class="session-body">
+    <div class="session-q">Насколько ты знаком с темой?</div>
+    <div class="branch-list">
+      <button class="branch-item" data-action="pick-branch" data-branch="novice">
+        <div><div class="title">Не знаком, хочу изучить</div><div class="sub">Разберём с нуля, с объяснениями</div></div>
+        <svg><use href="#i-chev-r"/></svg>
+      </button>
+      <button class="branch-item" data-action="pick-branch" data-branch="partial">
+        <div><div class="title">Немного знаю, хочу углубиться</div><div class="sub">Смешаем вопросы и объяснения</div></div>
+        <svg><use href="#i-chev-r"/></svg>
+      </button>
+      <button class="branch-item" data-action="pick-branch" data-branch="expert">
+        <div><div class="title">Знаком с материалом, хочу повторить</div><div class="sub">Прямые вопросы без подсказок</div></div>
+        <svg><use href="#i-chev-r"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<section class="screen no-tab" data-screen="session_step">
+  <div class="session-top">
+    <button class="close" data-action="confirm-close-session"><svg><use href="#i-x"/></svg></button>
+    <div class="session-progress"><span id="sess-progress-bar"></span></div>
+  </div>
+  <div class="session-body" id="session-step-body"></div>
+</section>
+
+<section class="screen no-tab" data-screen="session_done">
+  <div class="session-top">
+    <div class="session-progress"><span style="width:100%"></span></div>
+  </div>
+  <div class="session-done">
+    <div class="icon-big"><svg><use href="#i-check"/></svg></div>
+    <h2>Сессия завершена</h2>
+    <p>Сохранил в историю коротких сессий. Можешь вернуться в любой момент, пройти ещё раз или превратить в проект.</p>
+    <button class="btn btn-primary btn-block" data-action="show-screen" data-screen="home">На главную</button>
+    <button class="btn btn-secondary btn-block" style="margin-top:10px" data-action="show-tab" data-tab="projects">Открыть историю</button>
+  </div>
+</section>
+
+<!-- ============ PROJECT CREATION FLOW ============ -->
+
+<section class="screen no-tab" data-screen="project_create">
+  <div class="page-h" style="margin-top:12px">
+    <button class="back-btn" data-action="show-screen" data-screen="home"><svg><use href="#i-arrow-l"/></svg></button>
+    <h1>Новый проект</h1>
+    <div style="width:36px"></div>
+  </div>
+  <div class="field">
+    <label>Цель</label>
+    <div class="select-wrap">
+      <button class="select-btn placeholder" data-action="toggle-select" data-select="pj-goal"><span id="pj-goal-label">Выбери цель</span><svg style="width:14px;height:14px"><use href="#i-chev-d"/></svg></button>
+      <div class="select-menu" data-select-menu="pj-goal">
+        <button data-select-value="pj-goal" data-value="Контрольная">Контрольная</button>
+        <button data-select-value="pj-goal" data-value="Экзамен">Экзамен</button>
+        <button data-select-value="pj-goal" data-value="Освоение материала">Освоение материала</button>
+      </div>
+    </div>
+  </div>
+  <div class="field">
+    <label>Предмет</label>
+    <div class="select-wrap">
+      <button class="select-btn placeholder" data-action="toggle-select" data-select="pj-subject"><span id="pj-subject-label">Выбери предмет</span><svg style="width:14px;height:14px"><use href="#i-chev-d"/></svg></button>
+      <div class="select-menu" data-select-menu="pj-subject">
+        <button data-select-value="pj-subject" data-value="Биология">Биология</button>
+        <button data-select-value="pj-subject" data-value="История">История</button>
+        <button data-select-value="pj-subject" data-value="Математика">Математика</button>
+        <button data-select-value="pj-subject" data-value="Физика">Физика</button>
+        <button data-select-value="pj-subject" data-value="Английский">Английский</button>
+        <button data-select-value="pj-subject" data-value="Обществознание">Обществознание</button>
+      </div>
+    </div>
+  </div>
+  <div class="field">
+    <label>Дедлайн (необязательно)</label>
+    <div class="input"><input type="text" id="pj-deadline" placeholder="Например: 14 августа"></div>
+  </div>
+  <div class="field">
+    <label>Материалы</label>
+    <div class="card" id="pj-materials-list">
+      <div class="mat-item"><div class="mtype"><svg><use href="#i-file"/></svg></div><div class="name">Учебник, глава 4</div></div>
+      <div class="mat-item"><div class="mtype"><svg><use href="#i-image"/></svg></div><div class="name">Фото конспекта</div></div>
+      <div class="mat-item"><div class="mtype"><svg><use href="#i-link"/></svg></div><div class="name">Видео-разбор</div></div>
+    </div>
+  </div>
+  <button class="btn btn-primary btn-block" style="margin-top:20px" data-action="create-project">Создать проект</button>
+</section>
+
+<section class="screen no-tab" data-screen="project_processing">
+  <div class="session-loading">
+    <div class="spinner"></div>
+    <div class="loading-phrase" id="pj-proc-phrase">Читаю материалы…</div>
+  </div>
+</section>
+
+<section class="screen no-tab" data-screen="project_calibration">
+  <div class="page-h" style="margin-top:12px">
+    <div></div>
+    <h1>Настрой темп</h1>
+    <div style="width:36px"></div>
+  </div>
+  <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:16px">Отметь для каждой опорной точки, насколько ты с ней знаком. От этого зависит, как система будет её подавать в сессиях.</p>
+  <div id="calib-list"></div>
+  <button class="btn btn-primary btn-block" style="margin-top:20px" data-action="finish-calibration">Готово</button>
+</section>
+
+<!-- ============ PROJECT DETAIL ============ -->
+
+<section class="screen" data-screen="project_detail">
+  <div class="page-h" style="margin-top:12px">
+    <button class="back-btn" data-action="back-from-project"><svg><use href="#i-arrow-l"/></svg></button>
+    <div></div>
+    <button class="icon-btn" data-action="toggle-dot-menu"><svg><use href="#i-more"/></svg></button>
+  </div>
+  <div class="dot-menu" id="dot-menu">
+    <button data-action="pj-menu" data-cmd="deadline"><svg><use href="#i-cal"/></svg>Изменить дедлайн</button>
+    <button data-action="pj-menu" data-cmd="pin"><svg><use href="#i-pin"/></svg><span id="dot-pin-label">Закрепить</span></button>
+    <button data-action="pj-menu" data-cmd="pause"><svg><use href="#i-pause"/></svg>Приостановить</button>
+    <button class="danger" data-action="pj-menu" data-cmd="delete"><svg><use href="#i-trash"/></svg>Удалить проект</button>
+  </div>
+  <h1 class="pd-title" id="pd-title"></h1>
+  <div class="pd-meta" id="pd-meta"></div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="p3">
+      <div class="p3-bar" id="pd-progress"></div>
+      <div class="p3-legend" id="pd-legend"></div>
+    </div>
+  </div>
+
+  <div class="pd-section">
+    <h3>Материалы (<span id="pd-mat-count">0</span>)</h3>
+    <div id="pd-materials"></div>
+    <button class="btn-ghost" style="padding:6px 4px;font-size:12px">+ Добавить материал</button>
+  </div>
+
+  <div class="pd-section">
+    <h3>Расписание</h3>
+    <div class="schedule-row">
+      <div class="card">
+        <div class="label">Осталось</div>
+        <div class="value" id="pd-sess-left">6</div>
+      </div>
+      <div class="card">
+        <div class="label">Следующая</div>
+        <div class="value" id="pd-next">завтра</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pd-section format-block">
+    <h3>Формат работы для этого проекта</h3>
+    <div class="card">
+      <div class="format-row"><div class="lbl">Длина сессии</div><div class="val" data-action="fmt-cycle" data-key="length">30 мин</div></div>
+      <div class="format-row"><div class="lbl">Время суток</div><div class="val" data-action="fmt-cycle" data-key="time">не задано</div></div>
+      <div class="format-row"><div class="lbl">Чередование тем</div><div class="val" data-action="fmt-cycle" data-key="interleave">стандартно</div></div>
+    </div>
+    <p class="hint">Тап по значению — сменить. Эти настройки переопределяют глобальные для этого проекта.</p>
+  </div>
+
+  <div class="pd-cta">
+    <button class="btn btn-primary btn-block" data-action="start-project-session">Продолжить обучение</button>
+  </div>
+</section>
+
+<!-- ============ PROJECTS TAB ============ -->
+
+<section class="screen" data-screen="projects">
+  <div id="explainer-projects"></div>
+  <div class="page-h">
+    <h1>Проекты</h1>
+    <button class="icon-btn" data-action="toggle-sort"><svg><use href="#i-sliders"/></svg></button>
+  </div>
+  <div class="sort-menu" id="sort-menu">
+    <button data-action="sort-by" data-key="deadline">По дедлайну</button>
+    <button data-action="sort-by" data-key="materials">По количеству материалов</button>
+    <button data-action="sort-by" data-key="progress">По прогрессу</button>
+  </div>
+  <div class="seg-group" style="margin-bottom:14px">
+    <button class="seg icon-only active" data-action="pj-tab" data-tab="active"><svg><use href="#i-folder"/></svg></button>
+    <button class="seg icon-only" data-action="pj-tab" data-tab="history"><svg><use href="#i-clock"/></svg></button>
+  </div>
+  <div id="pj-list"></div>
+</section>
+
+<!-- ============ ABOUT TAB ============ -->
+
+<section class="screen" data-screen="about">
+  <div id="explainer-about"></div>
+  <div class="page-h">
+    <h1>О тебе</h1>
+    <div></div>
+  </div>
+  <div class="seg-group about-tabs">
+    <button class="seg icon-only active" data-action="ab-tab" data-tab="0"><svg><use href="#i-chart"/></svg></button>
+    <button class="seg icon-only" data-action="ab-tab" data-tab="1"><svg><use href="#i-target"/></svg></button>
+    <button class="seg icon-only" data-action="ab-tab" data-tab="2"><svg><use href="#i-eye"/></svg></button>
+  </div>
+
+  <div id="ab-content-0" class="about-content">
+    <div class="stat-intro">На этой неделе ты занимался чаще обычного — особенно вечером. Физика идёт стабильнее алгебры.</div>
+    <div class="stat-grid">
+      <div class="stat-tile"><div class="n">6.5</div><div class="l">часов за неделю</div></div>
+      <div class="stat-tile"><div class="n">14</div><div class="l">разборов</div></div>
+      <div class="stat-tile"><div class="n">3</div><div class="l">проекта</div></div>
+      <div class="stat-tile"><div class="n">42%</div><div class="l">завершения</div></div>
+    </div>
+    <div class="heatmap">
+      <h4>Активность за месяц</h4>
+      <div class="grid" id="heat-grid"></div>
+    </div>
+  </div>
+
+  <div id="ab-content-1" class="about-content" style="display:none">
+    <div class="stat-intro">Приоритеты техник система выставила по твоим ответам в первой настройке и по тому, как проходят сессии.</div>
+    <div id="ab-methods"></div>
+    <button class="btn btn-secondary btn-block" style="margin-top:14px" data-action="show-screen" data-screen="registry"><svg style="width:16px;height:16px"><use href="#i-book"/></svg>Посмотреть все техники</button>
+  </div>
+
+  <div id="ab-content-2" class="about-content" style="display:none">
+    <div id="ab-observations"></div>
+  </div>
+</section>
+
+<!-- ============ REGISTRY ============ -->
+
+<section class="screen no-tab" data-screen="registry">
+  <div class="page-h" style="margin-top:12px">
+    <button class="back-btn" data-action="show-tab" data-tab="about"><svg><use href="#i-arrow-l"/></svg></button>
+    <h1>Реестр техник</h1>
+    <div style="width:36px"></div>
+  </div>
+  <p style="font-size:12px;color:var(--text2);line-height:1.4;margin-bottom:14px">11 техник уровня 2 — из них 3 расписаны полностью, остальные в задел на будущее.</p>
+  <div class="tech-grid" id="tech-grid"></div>
+</section>
+
+<section class="screen no-tab" data-screen="technique_detail">
+  <div class="page-h" style="margin-top:12px">
+    <button class="back-btn" data-action="show-screen" data-screen="registry"><svg><use href="#i-arrow-l"/></svg></button>
+    <div></div>
+    <div style="width:36px"></div>
+  </div>
+  <h1 class="pd-title" id="td-name"></h1>
+  <div class="pd-meta" id="td-tags"></div>
+  <div class="tech-detail-block">
+    <h4>Описание</h4>
+    <p id="td-desc"></p>
+  </div>
+  <div class="tech-detail-block">
+    <h4>Обоснование</h4>
+    <p id="td-rationale"></p>
+  </div>
+  <div class="tech-detail-block">
+    <h4>Пример</h4>
+    <p id="td-example"></p>
+  </div>
+  <div class="card" style="margin-top:20px">
+    <div style="font-size:10px;color:var(--accent-text);text-transform:uppercase;letter-spacing:.06em;font-weight:500;margin-bottom:8px">Тестовое задание</div>
+    <p style="font-size:14px;color:var(--text);line-height:1.5;margin-bottom:12px" id="td-task"></p>
+    <div class="input multiline"><textarea placeholder="Твой ответ…"></textarea></div>
+    <button class="btn btn-primary" style="margin-top:12px;width:100%" data-action="show-screen" data-screen="registry">Готово</button>
+  </div>
+</section>
+
+<!-- ============ PROFILE TAB ============ -->
+
+<section class="screen" data-screen="profile">
+  <div id="explainer-profile"></div>
+  <div class="page-h">
+    <h1>Профиль</h1>
+    <div></div>
+  </div>
+  <div class="settings-group">
+    <h3>Аккаунт</h3>
+    <div class="set-row" data-action="show-screen" data-screen="prof_account" style="cursor:pointer">
+      <div class="ic"><svg><use href="#i-user"/></svg></div>
+      <div class="body"><h4>Аккаунт</h4><p>Email, подписка, привязки, удаление аккаунта</p></div>
+      <svg class="chev"><use href="#i-chev-r"/></svg>
+    </div>
+  </div>
+  <div class="settings-group">
+    <h3>Учёба</h3>
+    <div class="set-row" data-action="show-screen" data-screen="prof_lessons" style="cursor:pointer">
+      <div class="ic"><svg><use href="#i-clock"/></svg></div>
+      <div class="body"><h4>Занятия</h4><p>Длина сессий, время, дни без работы</p></div>
+      <svg class="chev"><use href="#i-chev-r"/></svg>
+    </div>
+    <div class="set-row" data-action="show-screen" data-screen="prof_focus" style="cursor:pointer">
+      <div class="ic"><svg><use href="#i-target"/></svg></div>
+      <div class="body"><h4>Фокус-режим</h4><p>Блокировка приложений и уведомлений на время сессии</p></div>
+      <svg class="chev"><use href="#i-chev-r"/></svg>
+    </div>
+  </div>
+  <div class="settings-group">
+    <h3>Данные и вид</h3>
+    <div class="set-row" data-action="show-screen" data-screen="prof_privacy" style="cursor:pointer">
+      <div class="ic"><svg><use href="#i-shield"/></svg></div>
+      <div class="body"><h4>Приватность</h4><p>Экспорт данных, использование ответов для моделей</p></div>
+      <svg class="chev"><use href="#i-chev-r"/></svg>
+    </div>
+    <div class="set-row" data-action="show-screen" data-screen="prof_appearance" style="cursor:pointer">
+      <div class="ic"><svg><use href="#i-palette"/></svg></div>
+      <div class="body"><h4>Внешний вид</h4><p>Тема, размер шрифта, язык интерфейса</p></div>
+      <svg class="chev"><use href="#i-chev-r"/></svg>
+    </div>
+  </div>
+  <div class="settings-group">
+    <h3>Помощь</h3>
+    <div class="set-row" data-action="show-screen" data-screen="prof_help" style="cursor:pointer">
+      <div class="ic"><svg><use href="#i-help"/></svg></div>
+      <div class="body"><h4>Помощь</h4><p>FAQ, обратная связь, наука обучения</p></div>
+      <svg class="chev"><use href="#i-chev-r"/></svg>
+    </div>
+  </div>
+  <div style="margin-top:16px;text-align:center;padding:14px">
+    <div style="font-size:11px;color:var(--muted)">Sapfit · v0.1 · demo build</div>
+    <button class="btn-ghost" style="margin-top:8px;font-size:11px" data-action="reset-onboarding">Сбросить прогресс демо</button>
+  </div>
+</section>
+
+<!-- Profile sub-screens -->
+<section class="screen no-tab" data-screen="prof_account">
+  <div class="page-h" style="margin-top:12px"><button class="back-btn" data-action="show-tab" data-tab="profile"><svg><use href="#i-arrow-l"/></svg></button><h1>Аккаунт</h1><div style="width:36px"></div></div>
+  <div class="card" style="margin-bottom:10px"><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Email</div><div style="font-size:14px;color:var(--text)">demo@sapfit.app</div></div>
+  <div class="card" style="margin-bottom:10px"><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Подписка</div><div style="font-size:14px;color:var(--text)">Свободный доступ (демо)</div></div>
+  <div class="card" style="margin-bottom:10px"><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Привязки</div><div style="font-size:14px;color:var(--text)">Google · Apple</div></div>
+  <button class="btn btn-danger btn-block" style="margin-top:20px">Удалить аккаунт</button>
+</section>
+
+<section class="screen no-tab" data-screen="prof_lessons">
+  <div class="page-h" style="margin-top:12px"><button class="back-btn" data-action="show-tab" data-tab="profile"><svg><use href="#i-arrow-l"/></svg></button><h1>Занятия</h1><div style="width:36px"></div></div>
+  <div class="card"><div class="format-row"><div class="lbl">Длина сессии по умолчанию</div><div class="val">30 мин</div></div><div class="format-row"><div class="lbl">Время суток по умолчанию</div><div class="val">вечер</div></div><div class="format-row"><div class="lbl">Дни без работы</div><div class="val">воскресенье</div></div></div>
+  <p class="hint">Заглушка настроек: в реальном приложении здесь будут работающие переключатели.</p>
+</section>
+
+<section class="screen no-tab" data-screen="prof_focus">
+  <div class="page-h" style="margin-top:12px"><button class="back-btn" data-action="show-tab" data-tab="profile"><svg><use href="#i-arrow-l"/></svg></button><h1>Фокус-режим</h1><div style="width:36px"></div></div>
+  <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:16px">Пока идёт сессия, эти приложения и уведомления блокируются. Интегрируется с iOS Screen Time / Android Digital Wellbeing.</p>
+  <div class="card"><div class="format-row"><div class="lbl">TikTok</div><div class="val">блок</div></div><div class="format-row"><div class="lbl">Instagram</div><div class="val">блок</div></div><div class="format-row"><div class="lbl">YouTube</div><div class="val">только уведомления</div></div><div class="format-row"><div class="lbl">Telegram</div><div class="val">только уведомления</div></div></div>
+  <p class="hint">Заглушка: настоящая интеграция с системными API — в приложении, не в мокапе.</p>
+</section>
+
+<section class="screen no-tab" data-screen="prof_privacy">
+  <div class="page-h" style="margin-top:12px"><button class="back-btn" data-action="show-tab" data-tab="profile"><svg><use href="#i-arrow-l"/></svg></button><h1>Приватность</h1><div style="width:36px"></div></div>
+  <div class="card" style="margin-bottom:10px"><div class="format-row"><div class="lbl">Использовать ответы для обучения моделей</div><div class="val">выключено</div></div></div>
+  <button class="btn btn-secondary btn-block">Экспортировать мои данные</button>
+</section>
+
+<section class="screen no-tab" data-screen="prof_appearance">
+  <div class="page-h" style="margin-top:12px"><button class="back-btn" data-action="show-tab" data-tab="profile"><svg><use href="#i-arrow-l"/></svg></button><h1>Внешний вид</h1><div style="width:36px"></div></div>
+  <div class="card"><div class="format-row"><div class="lbl">Тема</div><div class="val">тёмная</div></div><div class="format-row"><div class="lbl">Размер шрифта</div><div class="val">стандартный</div></div><div class="format-row"><div class="lbl">Язык интерфейса</div><div class="val">Русский</div></div></div>
+  <p class="hint">Светлая тема — в разработке (в мокапе только тёмная).</p>
+</section>
+
+<section class="screen no-tab" data-screen="prof_help">
+  <div class="page-h" style="margin-top:12px"><button class="back-btn" data-action="show-tab" data-tab="profile"><svg><use href="#i-arrow-l"/></svg></button><h1>Помощь</h1><div style="width:36px"></div></div>
+  <div class="card" style="margin-bottom:10px;padding:14px 16px"><div style="font-size:14px;color:var(--text);font-weight:500;margin-bottom:4px">Как устроена наука обучения</div><div style="font-size:12px;color:var(--text2);line-height:1.5">Короткие тексты про активное припоминание, спейсинг, интерливинг — что доказано, а что нет.</div></div>
+  <div class="card" style="margin-bottom:10px;padding:14px 16px"><div style="font-size:14px;color:var(--text);font-weight:500;margin-bottom:4px">FAQ</div><div style="font-size:12px;color:var(--text2);line-height:1.5">Ответы на частые вопросы.</div></div>
+  <div class="card" style="padding:14px 16px"><div style="font-size:14px;color:var(--text);font-weight:500;margin-bottom:4px">Обратная связь</div><div style="font-size:12px;color:var(--text2);line-height:1.5">Написать команде.</div></div>
+</section>
+
+</main>
+
+<nav class="tabbar hidden" id="tabbar">
+  <button class="tab active" data-action="show-tab" data-tab="home"><svg><use href="#i-home"/></svg><span class="label">Главная</span></button>
+  <button class="tab" data-action="show-tab" data-tab="projects"><svg><use href="#i-folder"/></svg><span class="label">Проекты</span></button>
+  <button class="tab" data-action="show-tab" data-tab="about"><svg><use href="#i-chart"/></svg><span class="label">О тебе</span></button>
+  <button class="tab" data-action="show-tab" data-tab="profile"><svg><use href="#i-user"/></svg><span class="label">Профиль</span></button>
+</nav>
+
+<div class="demo-badge">Sapfit Prototype · Demo</div>
+
+</div>
+
+<script>
+// ============ STATE ============
+const DEFAULT_STATE = {
+  currentScreen: 'ob_welcome',
+  onboardingComplete: false,
+  wave2Offered: false,
+  wave2Complete: false,
+  ob: { name:'', age:'', situation:'', answers:{}, currentQ:0, ratings:[], subject:'' },
+
+  homeMode: null,
+  homeAttachments: [],
+  homePhraseIdx: 0,
+
+  projects: [
+    { id:'ege-physics', title:'ОГЭ по физике', goal:'Экзамен', subject:'Физика', deadline:'до 14 августа', materialsCount:12, pinned:true, paused:false, progress:{l:15,m:35,a:50}, meta:'Механика · до 14 августа', sessionsLeft:6, next:'завтра, 18:00', format:{length:'30 мин', time:'вечер', interleave:'стандартно'},
+      materials:[{type:'file',name:'Конспект: законы Ньютона'},{type:'image',name:'Фото учебника, глава 4'},{type:'link',name:'Видео-разбор задач'}],
+      roadmap:[
+        {name:'Первый закон Ньютона', level:'partial'},
+        {name:'Второй закон Ньютона', level:'novice'},
+        {name:'Третий закон Ньютона', level:'expert'},
+        {name:'Задачи на динамику', level:'novice'}
+      ]
+    },
+    { id:'trig', title:'Тригонометрия', goal:'Освоение материала', subject:'Алгебра', deadline:null, materialsCount:6, pinned:false, paused:false, progress:{l:34,m:20,a:46}, meta:'Формулы приведения · без дедлайна', sessionsLeft:4, next:'сегодня, 20:00', format:{length:'30 мин', time:'не задано', interleave:'стандартно'},
+      materials:[{type:'file',name:'Шпаргалка формул'},{type:'file',name:'Задачи на круг'}],
+      roadmap:[
+        {name:'Тригонометрический круг', level:'expert'},
+        {name:'Формулы приведения', level:'partial'}
+      ]
+    },
+    { id:'history', title:'История: XX век', goal:'Экзамен', subject:'История', deadline:'до 25 августа', materialsCount:3, pinned:false, paused:false, progress:{l:5,m:15,a:80}, meta:'Мировые войны · до 25 августа', sessionsLeft:8, next:'пятница, 17:30', format:{length:'45 мин', time:'утро', interleave:'мягко'},
+      materials:[{type:'file',name:'Хронология 1914–1918'},{type:'link',name:'Архивные карты фронтов'}],
+      roadmap:[
+        {name:'Первая мировая война', level:'novice'},
+        {name:'Межвоенный период', level:'novice'},
+        {name:'Вторая мировая война', level:'novice'}
+      ]
+    }
+  ],
+  history: [
+    { id:'h1', title:'Квадратные уравнения', date:'Сегодня, 09:12', preview:'2 материала · фото' },
+    { id:'h2', title:'Клеточное дыхание', date:'Вчера, 21:40', preview:'1 материал · текст' },
+    { id:'h3', title:'Причастный оборот', date:'3 дня назад', preview:'1 материал · ссылка' }
+  ],
+  currentProjectId: null,
+  currentSession: { branch:null, step:0, totalSteps:0, topic:'', origin:'quick' },
+
+  banners: [
+    { id:'b1', projectId:'ege-physics', title:'ОГЭ по физике', text:'2 темы почти закреплены — стоит продолжить' },
+    { id:'b2', projectId:'trig', title:'Тригонометрия', text:'Не занимались 3 дня' }
+  ],
+  activeTab: 'home',
+  projectsTab: 'active',
+  sortBy: 'deadline',
+  aboutTab: 0,
+  explainerShown: { projects:false, about:false, profile:false }
+};
+
+let state = null;
+try {
+  const stored = localStorage.getItem('sapfit_state');
+  state = stored ? JSON.parse(stored) : structuredClone(DEFAULT_STATE);
+} catch(e){ state = structuredClone(DEFAULT_STATE); }
+
+function saveState(){
+  try{ localStorage.setItem('sapfit_state', JSON.stringify(state)); }catch(e){}
+}
+function resetState(){
+  state = structuredClone(DEFAULT_STATE);
+  saveState();
+  showScreen('ob_welcome');
+}
+
+// ============ SEED CONSTANTS ============
+const OB_QUESTIONS = [
+  { id:'q1', text:'Сколько часов ты в среднем спишь в будни?', opts:['меньше 5','5–6','7–8','больше 8'] },
+  { id:'q2', text:'Сколько времени в день у тебя уходит на соцсети и развлечения?', opts:['меньше часа','1–3 часа','3–5 часов','больше 5 часов'] },
+  { id:'q3', text:'Как часто ты теряешь фокус во время занятий?', opts:['почти никогда','иногда','часто','почти всегда'] },
+  { id:'q4', text:'Насколько тяжело тебе начать заниматься, когда сел за уроки?', opts:['легко начинаю сразу','есть небольшое сопротивление','обычно долго раскачиваюсь','почти всегда откладываю'] },
+  { id:'q5', text:'Как ты обычно готовишься к контрольной?', opts:['перечитываю конспект','переписываю материал','решаю задачи и примеры','пересказываю кому-то или себе вслух'] },
+  { id:'q6', text:'Насколько чётко ты понимаешь, зачем именно сейчас учишь то, что учишь?', opts:['очень чётко','скорее понимаю','скорее не понимаю','не понимаю, просто надо'] },
+  { id:'q7', text:'Бывает, что учил-учил, а на контрольной не смог вспомнить?', opts:['почти никогда','иногда','часто','почти всегда'] },
+  { id:'q8', text:'Сколько часов вчера потратил на учёбу вне школьных занятий?', opts:['меньше часа','1–2 часа','2–4 часа','больше 4 часов'] },
+  { id:'q9', text:'Как в целом ты себя чувствуешь, когда думаешь об учёбе?', opts:['спокойно','немного напряжённо','тревожно','очень тяжело'] },
+  { id:'q10', text:'В двух словах — что тебе сейчас мешает учиться больше всего?', opts:null }
+];
+
+const OB2_TECHS = [
+  { name:'Метод Фейнмана', desc:'Объясни тему простыми словами, как младшему брату. Где начинаешь путаться — там пробел в понимании.', task:'Объясни, зачем клетке нужны митохондрии — представь, что говоришь пятикласснику.' },
+  { name:'Двойное кодирование', desc:'Держим текст и визуальную схему вместе. Вместе они запоминаются крепче, чем каждый по отдельности.', task:'Нарисуй схему деления клетки и подпиши каждую стадию, не глядя в текст.' },
+  { name:'Аналогии', desc:'Объясняем новое через структурное сходство с уже знакомым. Электрический ток — как поток воды в трубе.', task:'Придумай свою аналогию для того, как работает клеточная мембрана.' }
+];
+
+const OB2_FORMAT_Q = [
+  { q:'Когда тебе продуктивнее?', opts:['утром','днём','вечером','по-разному'] },
+  { q:'Как тебе удобнее работать?', opts:['короткими интенсивными подходами','длинными погружениями','как получится'] },
+  { q:'Комфортнее, когда темы…', opts:['перемешиваются','концентрируюсь на одной','зависит от предмета'] }
+];
+
+const HOME_PHRASES = ['Чем займёмся сегодня?','Продолжим проект?','Начнём новую сессию?','С чего начнём?'];
+
+const TECHNIQUES = [
+  { id:'t1', name:'Метод Фейнмана', full:true, short:'Объяснение простыми словами',
+    desc:'Объясни тему простыми словами, как будто рассказываешь младшему брату. Где начинаешь путаться или уходишь в сложные термины — там пробел в понимании, к нему возвращаемся.',
+    rationale:'Комбинация активного припоминания, разбиения на смысловые блоки и метакогнитивного контроля — устойчиво предсказывает долгосрочное удержание материала.',
+    example:'Вместо «митохондрия — органелла, осуществляющая клеточное дыхание» — «это как маленькая электростанция внутри клетки, которая берёт еду и кислород и превращает их в энергию».',
+    task:'Объясни своими словами, зачем растению нужен фотосинтез — представь, что говоришь это десятилетнему.',
+    tags:['биология','история','обществознание','сложные концепции'] },
+  { id:'t2', name:'Двойное кодирование', full:true, short:'Текст + визуальная схема',
+    desc:'Держим текст и визуальную схему вместе, не по отдельности. Мозг кодирует их в разных каналах памяти, и вместе они держатся крепче, чем любой из них поодиночке.',
+    rationale:'Теория Пайвио и принципы мультимедийного обучения Мэйера — подтверждено многократно на разных предметах.',
+    example:'Рядом с определением «круговорот воды» — простая схема со стрелками: испарение → облака → осадки → сток.',
+    task:'Посмотри на схему клеточного деления и подпиши, что происходит на каждой стадии, не подглядывая в текст.',
+    tags:['биология','физика','география','визуальный материал'] },
+  { id:'t3', name:'Аналогии', full:true, short:'Новое через знакомое',
+    desc:'Объясняем новое через структурное сходство с уже знакомым. Электрический ток — как поток воды в трубе, только вместо давления — напряжение.',
+    rationale:'Structure-mapping theory Джентнер — ускоряет построение ментальной модели новой темы за счёт готовой модели знакомой.',
+    example:'Клеточная мембрана — как таможня на границе: пропускает нужное, задерживает лишнее.',
+    task:'Придумай свою аналогию для того, как работает иммунная система, используя что-то из повседневной жизни.',
+    tags:['физика','химия','абстрактные понятия','новые темы'] },
+  { id:'t4', name:'Разработочный опрос', full:false, short:'Задаём себе «почему это так»' },
+  { id:'t5', name:'Самообъяснение', full:false, short:'Проговариваем каждый шаг' },
+  { id:'t6', name:'Конкретные примеры', full:false, short:'Иллюстрируем через реальные случаи' },
+  { id:'t7', name:'Концептуальные карты', full:false, short:'Схема связей между понятиями' },
+  { id:'t8', name:'Разбор готовых решений', full:false, short:'Изучаем пример, потом решаем сами' },
+  { id:'t9', name:'Чанкинг', full:false, short:'Группировка в смысловые блоки' },
+  { id:'t10', name:'Мнемоники', full:false, short:'Локусы, ключевые слова, рифмы' },
+  { id:'t11', name:'Генеративный эффект', full:false, short:'Пробуем ответить до объяснения' }
+];
+
+const METHOD_PRIORITIES = [
+  { name:'Активное припоминание', pct:85 },
+  { name:'Метод Фейнмана', pct:60 },
+  { name:'Аналогии', pct:50 },
+  { name:'Интерливинг', pct:35 }
+];
+
+const OBSERVATIONS = [
+  { date:'2 дня назад', text:'Заметил, что сессии по алгебре в 22:00 стабильно короче и с большим числом ошибок. Перенёс их на утро — точность выросла.' },
+  { date:'5 дней назад', text:'Метод Фейнмана заходит тебе лучше пересказа своими словами — стал использовать его чаще для физики.' },
+  { date:'Неделю назад', text:'Короткие сессии по 15 минут работают стабильнее длинных при высокой загрузке — учёл это в расписании.' }
+];
+
+const PROC_PHRASES = ['Анализируем материалы…','Собираем информацию…','Подбираем подход…','Готовим первый вопрос…'];
+const PROJ_PROC_PHRASES = ['Читаю материалы…','Строю дорожную карту…','Определяю опорные точки…','Рассчитываю расписание…'];
+
+// Session flows
+const SESSION_FLOWS = {
+  novice: [
+    { type:'explain', text:'Разберём тему постепенно. Ключевое: сила — это причина изменения движения. Не движения самого по себе, а именно его изменения.' },
+    { type:'mcq', q:'Что вызывает изменение движения тела?', opts:['Наличие силы','Наличие массы','Ничего — движение постоянно'] },
+    { type:'explain', text:'Второй закон связывает силу, массу и ускорение: F = m · a. Чем больше масса, тем больше сила нужна для того же ускорения.' },
+    { type:'input', q:'Как думаешь, почему один и тот же удар слабее толкает грузовик, чем велосипед?', ph:'Твой ответ…' },
+    { type:'input', q:'Сформулируй третий закон Ньютона своими словами, без подсказки.', ph:'Например: сила действия…' }
+  ],
+  partial: [
+    { type:'mcq', q:'Что связывает второй закон Ньютона?', opts:['Массу и объём','Силу, массу и ускорение','Скорость и время','Импульс и энергию'] },
+    { type:'explain', text:'Верно. F = m · a. Это не «сила равна работе», а «сила равна произведению массы на ускорение».' },
+    { type:'input', q:'Приведи пример второго закона из жизни (одна короткая фраза).', ph:'Например: разгон машины…' },
+    { type:'mcq', q:'Пара «действие-противодействие» — это про какой закон?', opts:['Первый','Второй','Третий'] }
+  ],
+  expert: [
+    { type:'input', q:'Сформулируй третий закон Ньютона.', ph:'Твой ответ…' },
+    { type:'input', q:'Напиши формулу второго закона и укажи единицы измерения.', ph:'F = …' },
+    { type:'input', q:'Один пример третьего закона из практики.', ph:'Опиши ситуацию…' },
+    { type:'input', q:'Как оценишь по шкале 1–5 свою уверенность в теме?', ph:'Оценка и почему…' }
+  ]
+};
+
+// ============ HELPERS ============
+function $(sel, ctx=document){ return ctx.querySelector(sel); }
+function $$(sel, ctx=document){ return [...ctx.querySelectorAll(sel)]; }
+function el(html){ const t=document.createElement('template'); t.innerHTML=html.trim(); return t.content.firstElementChild; }
+
+// ============ ROUTER ============
+const TAB_SCREENS = ['home','projects','about','profile','project_detail','registry'];
+function showScreen(name){
+  state.currentScreen = name;
+  saveState();
+  $$('.screen').forEach(s => s.classList.toggle('active', s.dataset.screen === name));
+  const tab = $('#tabbar');
+  const showTab = TAB_SCREENS.includes(name);
+  tab.classList.toggle('hidden', !showTab);
+  closeAllDropdowns();
+  render(name);
+  const active = $('.screen.active');
+  if (active) active.scrollTop = 0;
+}
+function showTab(tab){
+  state.activeTab = tab;
+  $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  showScreen(tab);
+}
+function closeAllDropdowns(){
+  $$('.select-menu').forEach(m=>m.classList.remove('open'));
+  $('#attach-menu')?.classList.remove('open');
+  $('#dot-menu')?.classList.remove('open');
+  $('#sort-menu')?.classList.remove('open');
+}
+
+// ============ RENDER DISPATCH ============
+function render(name){
+  if (name === 'home') renderHome();
+  else if (name === 'projects') renderProjects();
+  else if (name === 'about') renderAbout();
+  else if (name === 'profile') renderProfile();
+  else if (name === 'project_create') renderProjectCreate();
+  else if (name === 'project_detail') renderProjectDetail();
+  else if (name === 'project_calibration') renderCalibration();
+  else if (name === 'registry') renderRegistry();
+  else if (name === 'ob_question') renderObQuestion();
+  else if (name === 'ob2_tech') renderObTech();
+  else if (name === 'ob2_format') renderObFormat();
+  else if (name === 'ob2_config') renderObConfig();
+  else if (name === 'session_branch') { /* static */ }
+  else if (name === 'session_step') renderSessionStep();
+}
+
+// ============ HOME ============
+let phraseTimer = null;
+function renderHome(){
+  // banners
+  const stack = $('#banner-stack');
+  stack.innerHTML = '';
+  state.banners.slice(0,2).forEach((b, i) => {
+    const html = `<div class="banner-reminder ${i===1?'stacked':''}" data-banner-id="${b.id}"><h4>${b.title}</h4><p>${b.text}</p></div>`;
+    stack.appendChild(el(html));
+  });
+  // auto-dismiss after 6s
+  if (state.banners.length && !window._bannerTimer) {
+    window._bannerTimer = setTimeout(()=>{
+      state.banners.shift();
+      window._bannerTimer = null;
+      saveState();
+      if (state.currentScreen === 'home') renderHome();
+    }, 6000);
+  }
+  // click on banner → open project
+  stack.querySelectorAll('.banner-reminder').forEach(bn => {
+    bn.addEventListener('click', () => {
+      const id = bn.dataset.bannerId;
+      const b = state.banners.find(x=>x.id===id);
+      if (b) openProject(b.projectId);
+    });
+  });
+
+  // wave-2 banner (after onboarding, before wave2Complete)
+  const w2 = $('#wave2-banner');
+  w2.innerHTML = '';
+  if (state.onboardingComplete && !state.wave2Complete && !state.wave2Offered) {
+    state.wave2Offered = true;
+    saveState();
+  }
+  if (state.onboardingComplete && !state.wave2Complete) {
+    w2.appendChild(el(`<div class="banner-explainer" style="cursor:pointer" data-action="show-screen" data-screen="ob2_intro">
+      <h4>Хочешь настроить точнее?</h4>
+      <p>Ещё 15–20 минут — и мы подберём техники и формат под тебя точнее. Тап, чтобы пройти.</p>
+    </div>`));
+  }
+
+  // phrases carousel
+  $('#home-phrase').textContent = HOME_PHRASES[state.homePhraseIdx % HOME_PHRASES.length];
+  clearInterval(phraseTimer);
+  phraseTimer = setInterval(()=>{
+    state.homePhraseIdx = (state.homePhraseIdx + 1) % HOME_PHRASES.length;
+    const p = $('#home-phrase');
+    if (p) { p.style.opacity = 0; setTimeout(()=>{ p.textContent = HOME_PHRASES[state.homePhraseIdx]; p.style.opacity=1; },200); }
+  }, 4000);
+
+  // mode buttons
+  $('#mode-quick').classList.toggle('active', state.homeMode === 'quick');
+  $('#mode-project').classList.toggle('active', state.homeMode === 'project');
+  updateSendEnabled();
+
+  // attachments chips
+  const at = $('#home-attachments');
+  at.innerHTML = '';
+  state.homeAttachments.forEach((a, idx) => {
+    const iconId = a.type === 'camera' ? 'i-camera' : a.type === 'image' ? 'i-image' : 'i-file';
+    const label = a.type === 'camera' ? 'Фото со сцены' : a.type === 'image' ? 'Фото из галереи' : 'Файл';
+    at.appendChild(el(`<span class="chip-attach"><svg><use href="#${iconId}"/></svg>${label}<svg class="rm" data-action="rm-attach" data-idx="${idx}"><use href="#i-x"/></svg></span>`));
+  });
+}
+function updateSendEnabled(){
+  const send = $('#home-send');
+  const input = $('#home-input');
+  const has = state.homeMode && (input.value.trim() || state.homeAttachments.length);
+  send.disabled = !has;
+}
+
+// ============ PROJECTS ============
+function renderProjects(){
+  const list = $('#pj-list');
+  list.innerHTML = '';
+  // explainer once per session
+  const exp = $('#explainer-projects');
+  exp.innerHTML = '';
+  if (!state.explainerShown.projects) {
+    exp.appendChild(el(`<div class="banner-explainer"><h4>Раздел «Проекты»</h4><p>Здесь живут активные долгие сессии и история коротких. Закреплённые — всегда сверху.</p><svg class="dismiss" data-action="dismiss-explainer" data-section="projects"><use href="#i-x"/></svg></div>`));
+  }
+  // tab visual
+  $$('.seg', $('[data-screen="projects"]')).forEach(s => s.classList.toggle('active', s.dataset.tab === state.projectsTab));
+
+  if (state.projectsTab === 'active') {
+    let projects = [...state.projects];
+    if (state.sortBy === 'materials') projects.sort((a,b) => b.materialsCount - a.materialsCount);
+    else if (state.sortBy === 'progress') projects.sort((a,b) => (b.progress.l + b.progress.m) - (a.progress.l + a.progress.m));
+    projects.sort((a,b) => (b.pinned?1:0) - (a.pinned?1:0));
+    if (projects.length === 0) { list.appendChild(el(`<div class="empty">Пока нет активных проектов.</div>`)); return; }
+    projects.forEach(p => list.appendChild(renderProjectCard(p)));
+  } else {
+    if (state.history.length === 0) { list.appendChild(el(`<div class="empty">История пуста.</div>`)); return; }
+    state.history.forEach(h => list.appendChild(renderHistoryItem(h)));
+  }
+}
+function renderProjectCard(p){
+  const pinIcon = p.pinned ? '<svg><use href="#i-pin"/></svg>' : '';
+  const tags = [
+    `<span class="tag">${p.subject}</span>`,
+    p.deadline ? `<span class="tag">${p.deadline}</span>` : '<span class="tag">без дедлайна</span>'
+  ].join('');
+  const total = p.progress.l + p.progress.m + p.progress.a;
+  const w = k => (p.progress[k]/total*100).toFixed(1)+'%';
+  const card = el(`<div class="card proj-card ${p.pinned?'pinned':''}" style="cursor:pointer" data-pid="${p.id}">
+    <div class="top">
+      <div class="title">${pinIcon}<span>${p.title}</span></div>
+      <div class="count">${p.materialsCount} мат.</div>
+    </div>
+    <div class="tags">${tags}</div>
+    <div class="p3">
+      <div class="p3-bar">
+        <span style="width:${w('l')};background:var(--p-locked)"></span>
+        <span style="width:${w('m')};background:var(--p-learning)"></span>
+        <span style="width:${w('a')};background:var(--p-ahead)"></span>
+      </div>
+      <div class="p3-legend">
+        <div><i style="background:var(--p-locked)"></i>Закреплено ${p.progress.l}%</div>
+        <div><i style="background:var(--p-learning)"></i>Изучаем ${p.progress.m}%</div>
+        <div><i style="background:var(--p-ahead)"></i>Впереди ${p.progress.a}%</div>
+      </div>
+    </div>
+  </div>`);
+  card.addEventListener('click', () => openProject(p.id));
+  return card;
+}
+function renderHistoryItem(h){
+  const item = el(`<div class="hist-item">
+    <h4>${h.title}</h4>
+    <div class="meta">${h.date} · ${h.preview}</div>
+    <div class="hist-actions">
+      <button class="btn btn-sm" data-action="hist-open" data-id="${h.id}">Открыть</button>
+      <button class="btn btn-sm" data-action="hist-again" data-id="${h.id}">Пройти снова</button>
+      <button class="btn btn-sm" data-action="hist-add" data-id="${h.id}">+ материалы</button>
+      <button class="btn btn-sm danger" data-action="hist-del" data-id="${h.id}">Удалить</button>
+    </div>
+  </div>`);
+  return item;
+}
+
+// ============ ABOUT ============
+function renderAbout(){
+  const exp = $('#explainer-about');
+  exp.innerHTML = '';
+  if (!state.explainerShown.about) {
+    exp.appendChild(el(`<div class="banner-explainer"><h4>Раздел «О тебе»</h4><p>Статистика, приоритеты техник и наблюдения системы про твой стиль обучения.</p><svg class="dismiss" data-action="dismiss-explainer" data-section="about"><use href="#i-x"/></svg></div>`));
+  }
+  $$('.seg', $('.about-tabs')).forEach(s => s.classList.toggle('active', +s.dataset.tab === state.aboutTab));
+  ['ab-content-0','ab-content-1','ab-content-2'].forEach((id,i)=>{
+    $('#'+id).style.display = state.aboutTab === i ? 'block' : 'none';
+  });
+
+  // heatmap
+  const grid = $('#heat-grid');
+  if (grid.children.length === 0) {
+    for (let i=0; i<30; i++){
+      const lvl = [0,0,1,1,2,2,3,3,4,1,2,3,0][Math.floor(Math.random()*13)];
+      grid.appendChild(el(`<div class="cell ${lvl?'l'+lvl:''}"></div>`));
+    }
+  }
+  // methods
+  const m = $('#ab-methods');
+  m.innerHTML = '';
+  METHOD_PRIORITIES.forEach(mp => {
+    m.appendChild(el(`<div class="method-item"><div class="top"><div class="name">${mp.name}</div><div class="pct">${mp.pct}%</div></div><div class="bar"><span style="width:${mp.pct}%"></span></div></div>`));
+  });
+  // observations
+  const o = $('#ab-observations');
+  o.innerHTML = '';
+  OBSERVATIONS.forEach(ob => {
+    o.appendChild(el(`<div class="obs-item"><div class="date">${ob.date}</div><div class="text">${ob.text}</div></div>`));
+  });
+}
+
+// ============ PROFILE ============
+function renderProfile(){
+  const exp = $('#explainer-profile');
+  exp.innerHTML = '';
+  if (!state.explainerShown.profile) {
+    exp.appendChild(el(`<div class="banner-explainer"><h4>Раздел «Профиль»</h4><p>Общие настройки продукта: аккаунт, занятия, приватность, помощь.</p><svg class="dismiss" data-action="dismiss-explainer" data-section="profile"><use href="#i-x"/></svg></div>`));
+  }
+}
+
+// ============ PROJECT DETAIL ============
+function openProject(id){
+  state.currentProjectId = id;
+  showScreen('project_detail');
+}
+function renderProjectDetail(){
+  const p = state.projects.find(x => x.id === state.currentProjectId);
+  if (!p) return;
+  $('#pd-title').textContent = p.title;
+  $('#pd-meta').textContent = p.meta;
+  const total = p.progress.l + p.progress.m + p.progress.a;
+  const w = k => (p.progress[k]/total*100).toFixed(1)+'%';
+  $('#pd-progress').innerHTML = `
+    <span style="width:${w('l')};background:var(--p-locked)"></span>
+    <span style="width:${w('m')};background:var(--p-learning)"></span>
+    <span style="width:${w('a')};background:var(--p-ahead)"></span>`;
+  $('#pd-legend').innerHTML = `
+    <div><i style="background:var(--p-locked)"></i>Закреплено ${p.progress.l}%</div>
+    <div><i style="background:var(--p-learning)"></i>Изучаем ${p.progress.m}%</div>
+    <div><i style="background:var(--p-ahead)"></i>Впереди ${p.progress.a}%</div>`;
+  $('#pd-mat-count').textContent = p.materials.length;
+  const mats = $('#pd-materials');
+  mats.innerHTML = '';
+  p.materials.forEach(m => {
+    const icon = m.type === 'image' ? 'i-image' : m.type === 'link' ? 'i-link' : 'i-file';
+    mats.appendChild(el(`<div class="mat-item"><div class="mtype"><svg><use href="#${icon}"/></svg></div><div class="name">${m.name}</div></div>`));
+  });
+  $('#pd-sess-left').textContent = p.sessionsLeft;
+  $('#pd-next').textContent = p.next;
+  // format values
+  const rows = $$('.format-row', $('#\\30 '.replace('#0',''))); // no-op
+  $$('.format-row .val').forEach(v=>{
+    const k = v.dataset.key;
+    if (k) v.textContent = p.format[k];
+  });
+  $('#dot-pin-label').textContent = p.pinned ? 'Открепить' : 'Закрепить';
+}
+
+// ============ PROJECT CREATE ============
+function renderProjectCreate(){
+  state._pjGoal = null;
+  state._pjSubject = null;
+  $('#pj-goal-label').textContent = 'Выбери цель';
+  $('#pj-goal-label').parentElement.classList.add('placeholder');
+  $('#pj-subject-label').textContent = 'Выбери предмет';
+  $('#pj-subject-label').parentElement.classList.add('placeholder');
+  const dl = $('#pj-deadline'); if (dl) dl.value = '';
+  saveState();
+}
+
+// ============ CALIBRATION ============
+const LEVEL_LABELS = { novice:'Не знаком', partial:'Немного знаю', expert:'Знаком, повторю' };
+function renderCalibration(){
+  const p = state.projects.find(x => x.id === state.currentProjectId);
+  if (!p) return;
+  const list = $('#calib-list');
+  list.innerHTML = '';
+  p.roadmap.forEach((pt, i) => {
+    const item = el(`<div class="calib-item">
+      <div class="name">${pt.name}</div>
+      <div class="toggle">
+        <button data-cal="${i}" data-lvl="novice" class="${pt.level==='novice'?'active':''}">${LEVEL_LABELS.novice}</button>
+        <button data-cal="${i}" data-lvl="partial" class="${pt.level==='partial'?'active':''}">${LEVEL_LABELS.partial}</button>
+        <button data-cal="${i}" data-lvl="expert" class="${pt.level==='expert'?'active':''}">${LEVEL_LABELS.expert}</button>
+      </div>
+    </div>`);
+    list.appendChild(item);
+  });
+}
+
+// ============ REGISTRY ============
+function renderRegistry(){
+  const grid = $('#tech-grid');
+  grid.innerHTML = '';
+  TECHNIQUES.forEach(t => {
+    if (t.full) {
+      const card = el(`<div class="tech-card full" data-tid="${t.id}" style="cursor:pointer">
+        <div class="icon"><svg><use href="#i-lightbulb"/></svg></div>
+        <div class="name">${t.name}</div>
+        <div class="short-desc">${t.short}</div>
+        <div class="try">Попробовать →</div>
+      </div>`);
+      card.addEventListener('click', () => openTechnique(t.id));
+      grid.appendChild(card);
+    } else {
+      grid.appendChild(el(`<div class="tech-card short">
+        <div class="icon"><svg><use href="#i-book"/></svg></div>
+        <div class="name">${t.name}</div>
+        <div class="short-desc">${t.short}</div>
+      </div>`));
+    }
+  });
+}
+function openTechnique(id){
+  const t = TECHNIQUES.find(x => x.id === id);
+  if (!t || !t.full) return;
+  $('#td-name').textContent = t.name;
+  $('#td-tags').innerHTML = t.tags.map(tag=>`<span class="tag" style="margin-right:4px">${tag}</span>`).join('');
+  $('#td-desc').textContent = t.desc;
+  $('#td-rationale').textContent = t.rationale;
+  $('#td-example').textContent = t.example;
+  $('#td-task').textContent = t.task;
+  showScreen('technique_detail');
+}
+
+// ============ ONBOARDING ============
+function renderObQuestion(){
+  const idx = state.ob.currentQ;
+  const q = OB_QUESTIONS[idx];
+  $('#ob-q-progress').style.width = ((idx+1)/OB_QUESTIONS.length*100) + '%';
+  $('#ob-q-counter').textContent = `Вопрос ${idx+1} из ${OB_QUESTIONS.length}`;
+  $('#ob-q-text').textContent = q.text;
+  const opts = $('#ob-q-options');
+  opts.innerHTML = '';
+  const textInp = $('#ob-q-text-input');
+  const nextBtn = $('#ob-q-next');
+  if (q.opts) {
+    textInp.style.display = 'none';
+    opts.style.display = 'flex';
+    q.opts.forEach(o => {
+      const b = el(`<button class="ob-option">${o}</button>`);
+      const selected = state.ob.answers[q.id] === o;
+      if (selected) b.classList.add('selected');
+      b.addEventListener('click', () => {
+        state.ob.answers[q.id] = o;
+        saveState();
+        $$('.ob-option', opts).forEach(x => x.classList.remove('selected'));
+        b.classList.add('selected');
+        nextBtn.disabled = false;
+      });
+      opts.appendChild(b);
+    });
+    nextBtn.disabled = !state.ob.answers[q.id];
+  } else {
+    opts.style.display = 'none';
+    textInp.style.display = 'block';
+    $('#ob-q-freetext').value = state.ob.answers[q.id] || '';
+    nextBtn.disabled = false;
+  }
+}
+
+function renderObTech(){
+  const idx = state.ob._techIdx || 0;
+  const t = OB2_TECHS[idx];
+  $('#ob2-tech-progress').style.width = ((idx+1)/OB2_TECHS.length*100)+'%';
+  $('#ob2-tech-counter').textContent = `Техника ${idx+1} из ${OB2_TECHS.length}`;
+  $('#ob2-tech-name').textContent = t.name;
+  $('#ob2-tech-desc').textContent = t.desc;
+  $('#ob2-tech-task').textContent = t.task;
+}
+function renderObFormat(){
+  const i = state.ob._fmtIdx || 0;
+  const q = OB2_FORMAT_Q[i];
+  $('#ob2-fmt-q').textContent = q.q;
+  const box = $('#ob2-fmt-opts');
+  box.innerHTML = '';
+  q.opts.forEach(o => {
+    const b = el(`<button class="ob-option">${o}</button>`);
+    b.addEventListener('click', () => {
+      if (!state.ob._fmt) state.ob._fmt = {};
+      state.ob._fmt[i] = o;
+      if (i+1 < OB2_FORMAT_Q.length) { state.ob._fmtIdx = i+1; showScreen('ob2_format'); }
+      else showScreen('ob2_config');
+    });
+    box.appendChild(b);
+  });
+}
+function renderObConfig(){
+  const ratings = state.ob.ratings || [];
+  const pairs = OB2_TECHS.map((t,i) => ({name:t.name, r: ratings[i] || 'rather'}));
+  const priority = { yes:'Приоритет', rather:'Стандарт', 'not-really':'Реже', no:'Убрать из ротации' };
+  $('#ob2-cfg-techs').innerHTML = pairs.map(p => `<div>• <b>${p.name}</b> — ${priority[p.r]}</div>`).join('');
+  const fmt = state.ob._fmt || {};
+  $('#ob2-cfg-format').innerHTML = `<div>• Время: ${fmt[0]||'не задано'}</div><div>• Ритм: ${fmt[1]||'не задано'}</div><div>• Чередование: ${fmt[2]||'стандартно'}</div>`;
+}
+
+// ============ SESSION ============
+function startSession(origin, topic){
+  state.currentSession = { branch:null, step:0, totalSteps:0, topic: topic || 'Законы Ньютона', origin };
+  showScreen('session_processing');
+  let phraseI = 0;
+  const p = $('#session-proc-phrase');
+  const t = setInterval(()=>{
+    phraseI = (phraseI+1) % PROC_PHRASES.length;
+    p.textContent = PROC_PHRASES[phraseI];
+  }, 900);
+  setTimeout(()=>{ clearInterval(t); showScreen('session_branch'); }, 2600);
+}
+function renderSessionStep(){
+  const s = state.currentSession;
+  const flow = SESSION_FLOWS[s.branch] || [];
+  s.totalSteps = flow.length;
+  const idx = s.step;
+  const step = flow[idx];
+  const bar = $('#sess-progress-bar');
+  bar.style.width = ((idx+1)/(flow.length+1)*100)+'%';
+  const body = $('#session-step-body');
+  body.innerHTML = '';
+  if (!step) { showScreen('session_done'); return; }
+  if (step.type === 'explain') {
+    body.appendChild(el(`<div class="session-q" style="font-size:16px">Понимание темы</div>`));
+    body.appendChild(el(`<div class="session-explain">${step.text}</div>`));
+    const btn = el(`<button class="btn btn-primary btn-block" data-action="next-step">Понятно, дальше</button>`);
+    body.appendChild(btn);
+  } else if (step.type === 'input') {
+    body.appendChild(el(`<div class="session-q">${step.q}</div>`));
+    body.appendChild(el(`<div class="session-input"><textarea placeholder="${step.ph}"></textarea></div>`));
+    body.appendChild(el(`<button class="btn btn-primary btn-block" style="margin-top:16px" data-action="next-step">Дальше</button>`));
+  } else if (step.type === 'mcq') {
+    body.appendChild(el(`<div class="session-q">${step.q}</div>`));
+    const mcq = el(`<div class="mcq"></div>`);
+    step.opts.forEach((o,i) => {
+      const b = el(`<button>${o}</button>`);
+      b.addEventListener('click', () => {
+        $$('button', mcq).forEach(x => x.classList.remove('selected'));
+        b.classList.add('selected');
+        setTimeout(nextStep, 350);
+      });
+      mcq.appendChild(b);
+    });
+    body.appendChild(mcq);
+  }
+}
+function nextStep(){
+  const s = state.currentSession;
+  const flow = SESSION_FLOWS[s.branch] || [];
+  s.step += 1;
+  if (s.step >= flow.length) {
+    // save to history
+    if (s.origin === 'quick') {
+      state.history.unshift({ id:'h_'+Date.now(), title: s.topic, date:'Только что', preview:'разбор завершён' });
+    }
+    saveState();
+    showScreen('session_done');
+  } else {
+    saveState();
+    renderSessionStep();
+  }
+}
+
+// ============ ACTIONS ============
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('[data-action],[data-select-value],[data-cal]');
+  if (!t) {
+    // click outside dropdowns closes them
+    if (!e.target.closest('.select-menu') && !e.target.closest('.select-btn') && !e.target.closest('.attach-menu') && !e.target.closest('.gemini-row .attach') && !e.target.closest('.dot-menu') && !e.target.closest('.sort-menu')) {
+      closeAllDropdowns();
+    }
+    return;
+  }
+  const a = t.dataset.action;
+
+  if (a === 'show-screen') { showScreen(t.dataset.screen); return; }
+  if (a === 'show-tab') { showTab(t.dataset.tab); return; }
+
+  if (a === 'skip-demo') {
+    state.onboardingComplete = true;
+    state.wave2Complete = false;
+    state.ob.name = 'Демо'; state.ob.age = '16'; state.ob.situation='Школьник';
+    saveState();
+    showTab('home');
+    return;
+  }
+
+  if (a === 'ob-sso') {
+    const c1 = document.getElementById('c1'), c2 = document.getElementById('c2');
+    if (!c1.checked || !c2.checked) { alert('Отметь оба согласия ниже (это заглушка авторизации).'); return; }
+    showScreen('ob_profile');
+    return;
+  }
+  if (a === 'toggle-select') {
+    const key = t.dataset.select;
+    const menu = $(`[data-select-menu="${key}"]`);
+    const isOpen = menu.classList.contains('open');
+    closeAllDropdowns();
+    if (!isOpen) menu.classList.add('open');
+    return;
+  }
+  if (t.dataset.selectValue) {
+    const key = t.dataset.selectValue;
+    const val = t.dataset.value;
+    $(`#${key}-label`).textContent = val;
+    $(`#${key}-label`).parentElement.classList.remove('placeholder');
+    if (key === 'ob-situation') state.ob.situation = val;
+    if (key === 'pj-goal') state._pjGoal = val;
+    if (key === 'pj-subject') state._pjSubject = val;
+    saveState();
+    closeAllDropdowns();
+    return;
+  }
+  if (a === 'ob-profile-next') {
+    const name = $('#ob-name').value.trim();
+    const age = $('#ob-age').value.trim();
+    if (!name || !age || !state.ob.situation) { alert('Заполни все три поля'); return; }
+    state.ob.name = name; state.ob.age = age;
+    state.ob.currentQ = 0;
+    saveState();
+    showScreen('ob_question');
+    return;
+  }
+  if (a === 'ob-question-next') {
+    const q = OB_QUESTIONS[state.ob.currentQ];
+    if (!q.opts) {
+      state.ob.answers[q.id] = $('#ob-q-freetext').value;
+    }
+    saveState();
+    if (state.ob.currentQ + 1 < OB_QUESTIONS.length) {
+      state.ob.currentQ += 1;
+      showScreen('ob_question');
+    } else {
+      showScreen('ob_processing');
+      let i = 0;
+      const phrases = ['Обрабатываю ответы…','Строю первую гипотезу…','Готовлю наблюдения…'];
+      const p = $('#ob-proc-phrase');
+      const ti = setInterval(()=>{ i = (i+1)%phrases.length; p.textContent = phrases[i]; }, 900);
+      setTimeout(()=>{ clearInterval(ti); showScreen('ob_observations'); }, 2600);
+    }
+    return;
+  }
+  if (a === 'finish-onboarding') {
+    state.onboardingComplete = true;
+    saveState();
+    showTab('home');
+    return;
+  }
+  if (a === 'ob2-subject') {
+    state.ob.subject = t.dataset.value;
+    saveState();
+    showScreen('ob2_demo');
+    return;
+  }
+  if (a === 'ob2-start-tech') {
+    state.ob._techIdx = 0;
+    state.ob.ratings = [];
+    saveState();
+    showScreen('ob2_tech');
+    return;
+  }
+  if (a === 'ob2-rate') {
+    const idx = state.ob._techIdx || 0;
+    state.ob.ratings[idx] = t.dataset.value;
+    if (idx + 1 < OB2_TECHS.length) {
+      state.ob._techIdx = idx + 1;
+      saveState();
+      showScreen('ob2_tech');
+    } else {
+      state.ob._fmtIdx = 0;
+      saveState();
+      showScreen('ob2_format');
+    }
+    return;
+  }
+  if (a === 'ob2-finish') {
+    state.wave2Complete = true;
+    saveState();
+    showTab('home');
+    return;
+  }
+
+  if (a === 'home-mode') {
+    state.homeMode = state.homeMode === t.dataset.mode ? null : t.dataset.mode;
+    saveState();
+    renderHome();
+    return;
+  }
+  if (a === 'toggle-attach') {
+    const menu = $('#attach-menu');
+    const open = menu.classList.contains('open');
+    closeAllDropdowns();
+    if (!open) menu.classList.add('open');
+    return;
+  }
+  if (a === 'home-attach') {
+    state.homeAttachments.push({ type: t.dataset.type });
+    saveState();
+    closeAllDropdowns();
+    renderHome();
+    return;
+  }
+  if (a === 'rm-attach') {
+    state.homeAttachments.splice(+t.dataset.idx, 1);
+    saveState();
+    renderHome();
+    return;
+  }
+  if (a === 'home-send') {
+    if (state.homeMode === 'quick') {
+      const topic = $('#home-input').value.trim() || 'Разбор материала';
+      $('#home-input').value = '';
+      state.homeAttachments = [];
+      state.homeMode = null;
+      saveState();
+      startSession('quick', topic);
+    } else if (state.homeMode === 'project') {
+      showScreen('project_create');
+    }
+    return;
+  }
+  if (a === 'pick-branch') {
+    state.currentSession.branch = t.dataset.branch;
+    state.currentSession.step = 0;
+    saveState();
+    showScreen('session_step');
+    return;
+  }
+  if (a === 'next-step') { nextStep(); return; }
+  if (a === 'confirm-close-session') {
+    if (confirm('Закрыть сессию? Прогресс не сохранится.')) showScreen('home');
+    return;
+  }
+
+  if (a === 'create-project') {
+    if (!state._pjGoal || !state._pjSubject) { alert('Заполни цель и предмет'); return; }
+    // Create draft project and roadmap
+    const newProj = {
+      id: 'p_'+Date.now(),
+      title: state._pjSubject + ': ' + state._pjGoal,
+      goal: state._pjGoal, subject: state._pjSubject,
+      deadline: $('#pj-deadline').value || null,
+      materialsCount: 3, pinned:false, paused:false,
+      progress:{l:0,m:5,a:95},
+      meta: state._pjSubject + ' · ' + (state._pjGoal),
+      sessionsLeft: 5, next:'завтра',
+      format:{length:'30 мин', time:'не задано', interleave:'стандартно'},
+      materials:[{type:'file',name:'Учебник, глава 4'},{type:'image',name:'Фото конспекта'},{type:'link',name:'Видео-разбор'}],
+      roadmap: [
+        {name: state._pjSubject + ': вводная часть', level:'novice'},
+        {name: state._pjSubject + ': ключевые концепции', level:'novice'},
+        {name: state._pjSubject + ': задачи и практика', level:'novice'}
+      ]
+    };
+    state.projects.unshift(newProj);
+    state.currentProjectId = newProj.id;
+    saveState();
+    showScreen('project_processing');
+    let i = 0;
+    const p = $('#pj-proc-phrase');
+    const ti = setInterval(()=>{ i = (i+1)%PROJ_PROC_PHRASES.length; p.textContent = PROJ_PROC_PHRASES[i]; }, 900);
+    setTimeout(()=>{ clearInterval(ti); showScreen('project_calibration'); }, 3200);
+    return;
+  }
+  if (t.dataset.cal !== undefined) {
+    const idx = +t.dataset.cal;
+    const lvl = t.dataset.lvl;
+    const p = state.projects.find(x => x.id === state.currentProjectId);
+    p.roadmap[idx].level = lvl;
+    saveState();
+    renderCalibration();
+    return;
+  }
+  if (a === 'finish-calibration') {
+    showScreen('project_detail');
+    return;
+  }
+  if (a === 'back-from-project') {
+    showTab('projects');
+    return;
+  }
+  if (a === 'toggle-dot-menu') {
+    const m = $('#dot-menu');
+    const open = m.classList.contains('open');
+    closeAllDropdowns();
+    if (!open) m.classList.add('open');
+    return;
+  }
+  if (a === 'pj-menu') {
+    const cmd = t.dataset.cmd;
+    const p = state.projects.find(x => x.id === state.currentProjectId);
+    if (!p) return;
+    if (cmd === 'pin') { p.pinned = !p.pinned; saveState(); renderProjectDetail(); }
+    if (cmd === 'pause') { p.paused = !p.paused; saveState(); }
+    if (cmd === 'delete') {
+      if (confirm('Удалить проект?')) {
+        state.projects = state.projects.filter(x => x.id !== p.id);
+        state.currentProjectId = null;
+        saveState();
+        showTab('projects');
+      }
+    }
+    if (cmd === 'deadline') alert('Смена дедлайна — заглушка мокапа.');
+    closeAllDropdowns();
+    return;
+  }
+  if (a === 'fmt-cycle') {
+    const p = state.projects.find(x => x.id === state.currentProjectId);
+    const key = t.dataset.key;
+    const cycles = {
+      length: ['15 мин','30 мин','45 мин'],
+      time: ['утро','день','вечер','не задано'],
+      interleave: ['мягко','стандартно','агрессивно']
+    };
+    const arr = cycles[key];
+    const cur = arr.indexOf(p.format[key]);
+    p.format[key] = arr[(cur+1) % arr.length];
+    saveState();
+    renderProjectDetail();
+    return;
+  }
+  if (a === 'start-project-session') {
+    const p = state.projects.find(x => x.id === state.currentProjectId);
+    startSession('project', p ? p.title : 'Проект');
+    return;
+  }
+
+  if (a === 'pj-tab') {
+    state.projectsTab = t.dataset.tab;
+    saveState();
+    renderProjects();
+    return;
+  }
+  if (a === 'toggle-sort') {
+    const m = $('#sort-menu');
+    const open = m.classList.contains('open');
+    closeAllDropdowns();
+    if (!open) m.classList.add('open');
+    return;
+  }
+  if (a === 'sort-by') {
+    state.sortBy = t.dataset.key;
+    saveState();
+    closeAllDropdowns();
+    renderProjects();
+    return;
+  }
+  if (a === 'hist-open' || a === 'hist-again') {
+    const h = state.history.find(x => x.id === t.dataset.id);
+    startSession('quick', h ? h.title : 'Повтор');
+    return;
+  }
+  if (a === 'hist-add') {
+    if (confirm('Превратить эту сессию в проект?')) {
+      const h = state.history.find(x => x.id === t.dataset.id);
+      if (h) {
+        state.history = state.history.filter(x => x.id !== h.id);
+        state.projects.unshift({
+          id:'p_'+Date.now(), title:h.title, goal:'Освоение материала', subject:'Общее',
+          deadline:null, materialsCount:2, pinned:false, paused:false,
+          progress:{l:0,m:20,a:80}, meta:'из истории · без дедлайна',
+          sessionsLeft:5, next:'завтра',
+          format:{length:'30 мин', time:'не задано', interleave:'стандартно'},
+          materials:[{type:'file',name:h.preview}],
+          roadmap:[{name:h.title, level:'partial'}]
+        });
+        state.currentProjectId = state.projects[0].id;
+        saveState();
+        showScreen('project_detail');
+      }
+    }
+    return;
+  }
+  if (a === 'hist-del') {
+    if (confirm('Удалить запись?')) {
+      state.history = state.history.filter(x => x.id !== t.dataset.id);
+      saveState();
+      renderProjects();
+    }
+    return;
+  }
+
+  if (a === 'ab-tab') {
+    state.aboutTab = +t.dataset.tab;
+    saveState();
+    renderAbout();
+    return;
+  }
+  if (a === 'dismiss-explainer') {
+    state.explainerShown[t.dataset.section] = true;
+    saveState();
+    if (state.currentScreen === t.dataset.section) render(t.dataset.section);
+    return;
+  }
+
+  if (a === 'reset-onboarding') {
+    if (confirm('Сбросить прогресс мокапа? Начнёшь с онбординга заново.')) {
+      localStorage.removeItem('sapfit_state');
+      location.reload();
+    }
+    return;
+  }
+});
+
+// input listener for home
+document.addEventListener('input', (e) => {
+  if (e.target.id === 'home-input') updateSendEnabled();
+});
+
+// swipe support for About tab
+let touchStartX = null;
+document.addEventListener('touchstart', (e) => {
+  if (state.currentScreen !== 'about') return;
+  touchStartX = e.touches[0].clientX;
+});
+document.addEventListener('touchend', (e) => {
+  if (state.currentScreen !== 'about' || touchStartX === null) return;
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  if (Math.abs(dx) < 40) { touchStartX = null; return; }
+  if (dx < 0 && state.aboutTab < 2) state.aboutTab += 1;
+  else if (dx > 0 && state.aboutTab > 0) state.aboutTab -= 1;
+  saveState();
+  renderAbout();
+  touchStartX = null;
+});
+
+// ============ INIT ============
+function init(){
+  // If onboarding done and no explicit target, land on home
+  if (state.onboardingComplete && (state.currentScreen === 'ob_welcome' || !state.currentScreen)) {
+    state.currentScreen = 'home';
+    state.activeTab = 'home';
+  }
+  // Route
+  showScreen(state.currentScreen || 'ob_welcome');
+  if (TAB_SCREENS.includes(state.currentScreen)) showTab(state.activeTab || 'home');
+}
+init();
+</script>
+
+</body>
+</html>

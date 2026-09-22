@@ -1,0 +1,197 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+.compare-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.phone-frame {
+  background: #14161C;
+  border-radius: 26px;
+  padding: 8px;
+  border: 0.5px solid #2A2D3A;
+}
+.phone-screen {
+  background: #14161C;
+  border-radius: 20px;
+  min-height: 560px;
+  padding: 0 14px 14px;
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+.state-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 8px;
+}
+.status-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 4px 16px;
+  font-size: 12px; color: #7B8296;
+}
+.center-block {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+}
+.greeting-text {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 17px; font-weight: 500; color: #E2E4EC; text-align: center;
+}
+.segmented {
+  display: flex;
+  background: #1A1D28;
+  border-radius: 28px;
+  padding: 5px;
+  width: 100%;
+  border: 0.5px solid #2A2D3A;
+}
+.segment {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 11px 6px;
+  border-radius: 22px;
+}
+.segment i { font-size: 15px; color: #7B8296; }
+.segment span { font-size: 10px; color: #7B8296; font-weight: 500; text-align: center; line-height: 1.2; }
+.segment.active { background: #262C4A; border: 0.5px solid #4A50A8; }
+.segment.active i, .segment.active span { color: #A5A9FF; }
+
+.context-panel { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+.context-label { font-size: 10px; color: #4D5266; text-align: center; margin-bottom: 2px; }
+.tile-row { display: flex; gap: 6px; }
+.tile {
+  flex: 1;
+  background: #1E212E;
+  border-radius: 20px;
+  padding: 14px 6px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  border: 0.5px solid #2A2D3A;
+}
+.tile i { font-size: 17px; color: #8B8FFA; }
+.tile span { font-size: 10px; color: #C5C8D6; font-weight: 500; }
+
+/* Project form fields */
+.field {
+  background: #1E212E;
+  border: 0.5px solid #2A2D3A;
+  border-radius: 18px;
+  padding: 10px 14px;
+}
+.field-label { font-size: 9px; color: #5A6480; margin-bottom: 3px; }
+.field-value { font-size: 12px; color: #E2E4EC; }
+.field-value.placeholder { color: #5A6480; }
+.field-row { display: flex; gap: 6px; }
+.field-row .field { flex: 1; }
+.create-btn {
+  background: #6366F1;
+  border-radius: 20px;
+  padding: 12px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: #F5F6FF;
+  margin-top: 2px;
+}
+
+.bottom-nav {
+  display: flex;
+  background: rgba(38, 42, 61, 0.55);
+  border-radius: 30px;
+  padding: 5px;
+  border: 0.5px solid rgba(139, 143, 250, 0.18);
+  margin-top: 14px;
+  gap: 3px;
+}
+.nav-item {
+  flex: 1;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+  padding: 8px 6px;
+  border-radius: 20px;
+}
+.nav-item i { font-size: 16px; color: #4D5266; }
+.nav-item span { font-size: 0; width: 0; overflow: hidden; color: #4D5266; white-space: nowrap; }
+.nav-item.active { background: #6366F1; flex: 1.6; }
+.nav-item.active i { color: #F5F6FF; }
+.nav-item.active span { font-size: 10px; font-weight: 500; width: auto; margin-left: 2px; color: #F5F6FF; }
+</style>
+
+<h2 class="sr-only">Два состояния главного экрана в зависимости от выбранного режима</h2>
+
+<div class="compare-wrap">
+
+  <!-- STATE 1: Разобрать тему -->
+  <div>
+    <div class="state-label">Разобрать тему</div>
+    <div class="phone-frame">
+      <div class="phone-screen">
+        <div class="status-bar"><span>10:24</span><span><i class="ti ti-wifi"></i></span></div>
+        <div class="center-block">
+          <div class="greeting-text">Что разбираем?</div>
+          <div class="segmented">
+            <div class="segment active"><i class="ti ti-bolt" aria-hidden="true"></i><span>Разобрать тему</span></div>
+            <div class="segment"><i class="ti ti-target-arrow" aria-hidden="true"></i><span>Готовиться к большому</span></div>
+          </div>
+          <div class="context-panel">
+            <div class="context-label">Принеси материал для разбора</div>
+            <div class="tile-row">
+              <div class="tile"><i class="ti ti-file-text" aria-hidden="true"></i><span>Текст</span></div>
+              <div class="tile"><i class="ti ti-camera" aria-hidden="true"></i><span>Фото</span></div>
+              <div class="tile"><i class="ti ti-link" aria-hidden="true"></i><span>Ссылка</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="nav-item active"><i class="ti ti-home" aria-hidden="true"></i><span>Главная</span></div>
+          <div class="nav-item"><i class="ti ti-folder" aria-hidden="true"></i></div>
+          <div class="nav-item"><i class="ti ti-chart-bar" aria-hidden="true"></i></div>
+          <div class="nav-item"><i class="ti ti-user" aria-hidden="true"></i></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATE 2: Готовиться к большому -->
+  <div>
+    <div class="state-label">Готовиться к большому</div>
+    <div class="phone-frame">
+      <div class="phone-screen">
+        <div class="status-bar"><span>10:24</span><span><i class="ti ti-wifi"></i></span></div>
+        <div class="center-block">
+          <div class="greeting-text">К чему готовимся?</div>
+          <div class="segmented">
+            <div class="segment"><i class="ti ti-bolt" aria-hidden="true"></i><span>Разобрать тему</span></div>
+            <div class="segment active"><i class="ti ti-target-arrow" aria-hidden="true"></i><span>Готовиться к большому</span></div>
+          </div>
+          <div class="context-panel">
+            <div class="field">
+              <div class="field-label">Название проекта</div>
+              <div class="field-value placeholder">Например, ОГЭ по физике</div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <div class="field-label">Предмет</div>
+                <div class="field-value placeholder">Выбрать</div>
+              </div>
+              <div class="field">
+                <div class="field-label">Дедлайн</div>
+                <div class="field-value placeholder">Выбрать дату</div>
+              </div>
+            </div>
+            <div class="create-btn">Создать проект</div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="nav-item active"><i class="ti ti-home" aria-hidden="true"></i><span>Главная</span></div>
+          <div class="nav-item"><i class="ti ti-folder" aria-hidden="true"></i></div>
+          <div class="nav-item"><i class="ti ti-chart-bar" aria-hidden="true"></i></div>
+          <div class="nav-item"><i class="ti ti-user" aria-hidden="true"></i></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

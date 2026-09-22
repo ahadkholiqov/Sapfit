@@ -1,0 +1,32 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- Center Dot -->
+    <path
+        android:pathData="M 54,54 m -7,0 a 7,7 0 1,0 14,0 a 7,7 0 1,0 -14,0"
+        android:fillColor="#FFFFFF" />
+
+    <!-- Ring 1 (Inner Arc - White) -->
+    <path
+        android:pathData="M 66.73,66.73 A 18,18 0 1,1 66.73,41.27"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="6"
+        android:strokeLineCap="round" />
+
+    <!-- Ring 2 (Middle Arc - Slate) -->
+    <path
+        android:pathData="M 73.80,73.80 A 28,28 0 1,1 73.80,34.20"
+        android:strokeColor="#8A8F9B"
+        android:strokeWidth="6"
+        android:strokeLineCap="round" />
+
+    <!-- Ring 3 (Outer Arc - Dark Charcoal / Silver) -->
+    <path
+        android:pathData="M 80.87,80.87 A 38,38 0 1,1 80.87,27.13"
+        android:strokeColor="#4B5563"
+        android:strokeWidth="6"
+        android:strokeLineCap="round" />
+</vector>

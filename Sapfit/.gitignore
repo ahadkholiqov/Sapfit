@@ -1,0 +1,44 @@
+# IDE / local environment
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.gradle/
+.kotlin/
+local.properties
+*.hprof
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Android / Gradle build output
+**/build/
+build/
+app/build/
+captures/
+.externalNativeBuild/
+.cxx/
+obj/
+bin/
+*.apk
+*.aab
+*.apks
+*.aar
+
+# Signing / secrets
+*.jks
+*.keystore
+*.p12
+*.pem
+*.key
+google-services.json
+.env
+.env.*
+!.env.example
+
+# Local debug / generated files
+debug.keystore
+my-upload-key.jks
+*.log
